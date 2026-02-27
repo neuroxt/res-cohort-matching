@@ -55,8 +55,7 @@ def load_rda(filepath: str, csv_fallback_dir: str = None) -> pd.DataFrame | None
         if csv_fallback_dir:
             csv_path = os.path.join(csv_fallback_dir, basename + '.csv')
         else:
-            # Default: same directory as rda, but in ../../../csv/tables/
-            # (vendor/ADNIMERGE2/data/*.rda → 3 levels up to project root)
+            # (vendor/ADNIMERGE2/data/*.rda → data → ADNIMERGE2 → vendor → project root = 3 levels up)
             rda_dir = os.path.dirname(filepath)
             project_root = os.path.dirname(os.path.dirname(os.path.dirname(rda_dir)))
             csv_path = os.path.join(project_root, 'csv', 'tables', basename + '.csv')

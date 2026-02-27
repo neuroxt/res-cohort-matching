@@ -120,7 +120,7 @@ DICOM 영상을 임상 데이터와 매칭하는 v4 파이프라인.
 |------|------|
 | `config.py` | 모달리티별 설정, 경로, 상수 |
 | `inventory.py` | DCM 디렉토리 스캔 → 모달리티별 인벤토리 |
-| `matcher.py` | 이미지-ADNIMERGE 매칭 (핵심 로직) |
+| `matching.py` | 이미지-ADNIMERGE 매칭 (핵심 로직) |
 | `merge.py` | `*_unique.csv` → `MERGED.csv` 병합 |
 | `cli.py` | CLI 오케스트레이션 |
 | `utils.py` | 로깅, 경로 추출, DICOM 유틸 |

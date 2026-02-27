@@ -29,7 +29,7 @@ sys.path.insert(0, PROJECT_ROOT)
 from adni.matching.config import NFS_BASE, OUTPUT_BASE, MODALITY_CONFIG, UCBERKELEY_ATTACH_CONFIG
 from adni.matching.utils import setup_logger
 from adni.matching.inventory import build_inventory, save_inventory, load_inventory
-from adni.matching.matcher import match_modality, attach_ucberkeley
+from adni.matching.matching import match_modality, attach_ucberkeley
 from adni.matching.merge import unique_csv_merge
 from glob import glob
 
