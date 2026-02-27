@@ -19,7 +19,7 @@ import argparse
 import logging
 from datetime import datetime
 
-# 프로젝트 루트
+# 프로젝트 루트 (adni/extraction/cli.py → adni/extraction → adni → project root)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 

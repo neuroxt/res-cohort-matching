@@ -21,7 +21,7 @@ import sys
 import argparse
 import logging
 
-# 프로젝트 루트를 sys.path에 추가
+# 프로젝트 루트 (adni/matching/cli.py → adni/matching → adni → project root)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 sys.path.insert(0, PROJECT_ROOT)
