@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Generated CSV outputs (NFS 서버에 생성)
+csv/
+*.csv
+
+# R build artifacts
+ADNIMERGE2/build/
+
+# macOS
+.DS_Store
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code / Serena (로컬 설정)
+.claude/
+.serena/
+
+# Logs
+*.log
