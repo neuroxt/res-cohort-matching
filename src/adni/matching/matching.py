@@ -544,6 +544,7 @@ def enrich_protocol_from_mriqc(unique_csv: str, mriqc_csv: str, modality: str):
 
     protocol_prefix = 'protocol/%s/' % modality
     filled_count = 0
+    matched_count = 0
 
     for idx, row in df.iterrows():
         uid = row.get(uid_col)
@@ -554,6 +555,8 @@ def enrich_protocol_from_mriqc(unique_csv: str, mriqc_csv: str, modality: str):
         mriqc_row = mriqc_index.get(uid_str)
         if mriqc_row is None:
             continue
+
+        matched_count += 1
 
         for mriqc_col, output_name in _MRIQC_ENRICH_MAP.items():
             col = protocol_prefix + output_name
@@ -570,10 +573,7 @@ def enrich_protocol_from_mriqc(unique_csv: str, mriqc_csv: str, modality: str):
 
     df.to_csv(unique_csv, index=False, quoting=csv.QUOTE_NONNUMERIC)
     logging.info('Enriched %s: %d cells filled from MRIQC (%d rows, %d matched UIDs)' % (
-        os.path.basename(unique_csv), filled_count, len(df),
-        sum(1 for _, r in df.iterrows()
-            if pd.notna(r.get(uid_col)) and
-            _normalize_uid(r[uid_col]) in mriqc_index)))
+        os.path.basename(unique_csv), filled_count, len(df), matched_count))
 
 
 # DCM 인벤토리 → protocol 필드 매핑
@@ -622,6 +622,7 @@ def enrich_protocol_from_dcm_inventory(unique_csv: str, inventory_path: str, mod
 
     protocol_prefix = 'protocol/%s/' % modality
     filled_count = 0
+    matched_count = 0
 
     for idx, row in df.iterrows():
         uid = row.get(uid_col)
@@ -632,6 +633,8 @@ def enrich_protocol_from_dcm_inventory(unique_csv: str, inventory_path: str, mod
         dcm_record = by_image_uid.get(uid_str, {})
         if not dcm_record:
             continue
+
+        matched_count += 1
 
         # Pixel Spacing: [x, y] 또는 "x\\y" 형식
         ps = dcm_record.get('dcm_PixelSpacing', '')
@@ -672,11 +675,8 @@ def enrich_protocol_from_dcm_inventory(unique_csv: str, inventory_path: str, mod
                         filled_count += 1
 
     df.to_csv(unique_csv, index=False, quoting=csv.QUOTE_NONNUMERIC)
-    matched = sum(1 for _, r in df.iterrows()
-                  if pd.notna(r.get(uid_col)) and
-                  _normalize_uid(r[uid_col]) in by_image_uid)
     logging.info('Enriched %s: %d cells filled from DCM inventory (%d rows, %d matched UIDs)' % (
-        os.path.basename(unique_csv), filled_count, len(df), matched))
+        os.path.basename(unique_csv), filled_count, len(df), matched_count))
 
 
 # =============================================================================
