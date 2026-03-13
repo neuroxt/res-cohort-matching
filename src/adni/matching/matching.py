@@ -419,7 +419,7 @@ def match_modality(adnimerge_csv: str,
         logging.info('MRIQC loaded: %d rows' % len(mriqc_df))
         for _, row in mriqc_df.iterrows():
             loni_val = row['LONIImage']
-            key = str(int(loni_val)) if pd.notna(loni_val) else ''
+            key = _normalize_uid(loni_val) if pd.notna(loni_val) else ''
             if key:
                 mriqc_index[key] = row
 
@@ -486,6 +486,14 @@ def match_modality(adnimerge_csv: str,
 # Protocol Enrichment from MRIQC (post-processing)
 # =============================================================================
 
+def _normalize_uid(val) -> str:
+    """UID 값을 정규화된 문자열로 변환 (numpy float/int 대응)."""
+    try:
+        return str(int(float(val)))
+    except (ValueError, TypeError):
+        return str(val)
+
+
 # MRIQC 컬럼 → protocol 출력 이름 (config의 MRIQC_PROTOCOL_FIELDS 서브셋)
 _MRIQC_ENRICH_MAP = {
     'SeriesDescription': 'description',
@@ -531,7 +539,7 @@ def enrich_protocol_from_mriqc(unique_csv: str, mriqc_csv: str, modality: str):
     for _, row in mriqc_df.iterrows():
         loni_val = row.get('LONIImage')
         if pd.notna(loni_val):
-            key = str(int(loni_val))
+            key = _normalize_uid(loni_val)
             mriqc_index[key] = row
 
     protocol_prefix = 'protocol/%s/' % modality
@@ -541,7 +549,7 @@ def enrich_protocol_from_mriqc(unique_csv: str, mriqc_csv: str, modality: str):
         uid = row.get(uid_col)
         if pd.isna(uid):
             continue
-        uid_str = str(int(uid)) if isinstance(uid, float) else str(uid)
+        uid_str = _normalize_uid(uid)
 
         mriqc_row = mriqc_index.get(uid_str)
         if mriqc_row is None:
@@ -565,7 +573,7 @@ def enrich_protocol_from_mriqc(unique_csv: str, mriqc_csv: str, modality: str):
         os.path.basename(unique_csv), filled_count, len(df),
         sum(1 for _, r in df.iterrows()
             if pd.notna(r.get(uid_col)) and
-            str(int(r[uid_col]) if isinstance(r[uid_col], float) else r[uid_col]) in mriqc_index)))
+            _normalize_uid(r[uid_col]) in mriqc_index)))
 
 
 # DCM 인벤토리 → protocol 필드 매핑
@@ -619,7 +627,7 @@ def enrich_protocol_from_dcm_inventory(unique_csv: str, inventory_path: str, mod
         uid = row.get(uid_col)
         if pd.isna(uid):
             continue
-        uid_str = str(int(uid)) if isinstance(uid, float) else str(uid)
+        uid_str = _normalize_uid(uid)
 
         dcm_record = by_image_uid.get(uid_str, {})
         if not dcm_record:
@@ -666,7 +674,7 @@ def enrich_protocol_from_dcm_inventory(unique_csv: str, inventory_path: str, mod
     df.to_csv(unique_csv, index=False, quoting=csv.QUOTE_NONNUMERIC)
     matched = sum(1 for _, r in df.iterrows()
                   if pd.notna(r.get(uid_col)) and
-                  str(int(r[uid_col]) if isinstance(r[uid_col], float) else r[uid_col]) in by_image_uid)
+                  _normalize_uid(r[uid_col]) in by_image_uid)
     logging.info('Enriched %s: %d cells filled from DCM inventory (%d rows, %d matched UIDs)' % (
         os.path.basename(unique_csv), filled_count, len(df), matched))
 
