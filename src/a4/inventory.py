@@ -16,10 +16,16 @@ from .config import (
 
 
 def _read_json_sidecar(json_path: str) -> dict:
-    """JSON sidecar 파일 읽기. 실패 시 빈 dict 반환."""
+    """JSON sidecar 파일 읽기. 실패 시 빈 dict 반환.
+
+    일부 sidecar가 list of dicts (여러 시리즈) → 첫 번째 항목 사용.
+    """
     try:
         with open(json_path, 'r') as f:
-            return json.load(f)
+            data = json.load(f)
+        if isinstance(data, list):
+            return data[0] if data else {}
+        return data
     except Exception as e:
         logging.debug('Failed to read JSON sidecar %s: %s' % (json_path, e))
         return {}
@@ -64,6 +70,7 @@ def _find_primary_nii(modality_dir: str) -> tuple:
         try:
             for entry in os.scandir(modality_dir):
                 if entry.name.endswith('.nii.gz'):
+                    logging.debug('NII_PATTERN miss, fallback: %s' % entry.name)
                     nii_path = entry.path
                     json_candidate = entry.path.replace('.nii.gz', '.json')
                     if os.path.isfile(json_candidate):

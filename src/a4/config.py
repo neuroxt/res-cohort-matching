@@ -22,7 +22,7 @@ OUTPUT_BASE = '/Volumes/nfs_storage/1_combined/A4/ORIG/DEMO'
 # =============================================================================
 # BID 정규식 (B + 1자리 비제로 + 8자리)
 # =============================================================================
-BID_RE = re.compile(r'^B[1-9]\d{8}$')
+BID_RE = re.compile(r'^B[1-9]\d{7}$')
 
 # =============================================================================
 # 모달리티 설정
@@ -40,7 +40,7 @@ MODALITY_CONFIG = {
 
 # NII 파일명 패턴: A4_{MR|PET}_{modality}_{BID}_{session}.nii.gz
 NII_PATTERN = re.compile(
-    r'^A4_(?:MR|PET)_\w+_B[1-9]\d{8}_\d{3}\.nii\.gz$'
+    r'^(?:A4|LEARN)_(?:MR|PET)_\w+_B[1-9]\d{7}_\d{3}\.nii\.gz$'
 )
 
 # MERGED.csv에서 제외할 모달리티 (파생 데이터)
@@ -94,9 +94,6 @@ IMAGING_CSV_FILES = {
     'tausuvr':   'TAUSUVR_11Aug2025.csv',
 }
 
-# 치료군 정보 (metadata/ 기준)
-TREATMENT_CSV = 'dose.csv'
-
 # =============================================================================
 # 혈액 바이오마커 CSV (DEMO/Clinical/External Data/ 기준)
 # =============================================================================
@@ -104,6 +101,15 @@ BIOMARKER_CSV_FILES = {
     'ptau217':      'biomarker_pTau217.csv',
     'roche_plasma': 'biomarker_Plasma_Roche_Results.csv',
     'ab_test':      'biomarker_AB_Test.csv',
+}
+
+# =============================================================================
+# Longitudinal CSV (DEMO/Clinical/ 하위)
+# =============================================================================
+LONGITUDINAL_CSV_FILES = {
+    'sv':   'Derived Data/SV.csv',        # 방문 일정 (SVSTDTC_DAYS_CONSENT)
+    'mmse': 'Raw Data/mmse.csv',          # MMSE longitudinal
+    'cdr':  'Raw Data/cdr.csv',           # CDR longitudinal
 }
 
 # =============================================================================

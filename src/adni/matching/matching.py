@@ -419,7 +419,7 @@ def match_modality(adnimerge_csv: str,
         logging.info('MRIQC loaded: %d rows' % len(mriqc_df))
         for _, row in mriqc_df.iterrows():
             loni_val = row['LONIImage']
-            key = str(int(loni_val)) if pd.notna(loni_val) else ''
+            key = _normalize_uid(loni_val) if pd.notna(loni_val) else ''
             if key:
                 mriqc_index[key] = row
 
@@ -480,6 +480,203 @@ def match_modality(adnimerge_csv: str,
     logging.info('Output saved at %s' % output_path_all)
     logging.info('Output saved at %s' % output_path_unique)
     logging.info('-----------------------------------------------------\n')
+
+
+# =============================================================================
+# Protocol Enrichment from MRIQC (post-processing)
+# =============================================================================
+
+def _normalize_uid(val) -> str:
+    """UID 값을 정규화된 문자열로 변환 (numpy float/int 대응)."""
+    try:
+        return str(int(float(val)))
+    except (ValueError, TypeError):
+        return str(val)
+
+
+# MRIQC 컬럼 → protocol 출력 이름 (config의 MRIQC_PROTOCOL_FIELDS 서브셋)
+_MRIQC_ENRICH_MAP = {
+    'SeriesDescription': 'description',
+    'AcquisitionType': 'Acquisition Type',
+    'AcquisitionPlane': 'Acquisition Plane',
+    'SeriesType': 'Weighting',
+    'SliceThickness': 'Slice Thickness',
+    'ReceiveCoilName': 'Coil',
+    'ScannerManufacturer': 'Manufacturer',
+    'ScannerModel': 'Mfg Model',
+    'MagneticFieldStrength': 'Field Strength',
+}
+
+
+def enrich_protocol_from_mriqc(unique_csv: str, mriqc_csv: str, modality: str):
+    """기존 *_unique.csv에 MRIQC 프로토콜 데이터 보강 (in-place 저장)
+
+    매칭 시 MRIQC 없이 생성된 unique.csv에 대해 사후 보강.
+    기존 값이 있는 셀은 건드리지 않고, 비어있는 셀만 채움.
+
+    Args:
+        unique_csv: *_unique.csv 경로
+        mriqc_csv: MRIQC.csv 경로
+        modality: 모달리티명 (e.g., 'T1')
+    """
+    if not os.path.isfile(unique_csv):
+        logging.warning('unique_csv not found: %s' % unique_csv)
+        return
+    if not os.path.isfile(mriqc_csv):
+        logging.warning('MRIQC CSV not found: %s' % mriqc_csv)
+        return
+
+    df = pd.read_csv(unique_csv, low_memory=False)
+    mriqc_df = pd.read_csv(mriqc_csv, low_memory=False)
+
+    uid_col = 'I_%s' % modality
+    if uid_col not in df.columns:
+        logging.warning('Column %s not found in %s' % (uid_col, unique_csv))
+        return
+
+    # MRIQC dict: {image_uid_str: Series}
+    mriqc_index = {}
+    for _, row in mriqc_df.iterrows():
+        loni_val = row.get('LONIImage')
+        if pd.notna(loni_val):
+            key = _normalize_uid(loni_val)
+            mriqc_index[key] = row
+
+    protocol_prefix = 'protocol/%s/' % modality
+    filled_count = 0
+    matched_count = 0
+
+    for idx, row in df.iterrows():
+        uid = row.get(uid_col)
+        if pd.isna(uid):
+            continue
+        uid_str = _normalize_uid(uid)
+
+        mriqc_row = mriqc_index.get(uid_str)
+        if mriqc_row is None:
+            continue
+
+        matched_count += 1
+
+        for mriqc_col, output_name in _MRIQC_ENRICH_MAP.items():
+            col = protocol_prefix + output_name
+            # 컬럼이 없으면 생성
+            if col not in df.columns:
+                df[col] = ''
+            # 기존 값이 비어있을 때만 채움
+            existing = df.at[idx, col]
+            if pd.isna(existing) or str(existing).strip() == '':
+                val = mriqc_row.get(mriqc_col, '')
+                if pd.notna(val) and str(val).strip():
+                    df.at[idx, col] = str(val)
+                    filled_count += 1
+
+    df.to_csv(unique_csv, index=False, quoting=csv.QUOTE_NONNUMERIC)
+    logging.info('Enriched %s: %d cells filled from MRIQC (%d rows, %d matched UIDs)' % (
+        os.path.basename(unique_csv), filled_count, len(df), matched_count))
+
+
+# DCM 인벤토리 → protocol 필드 매핑
+_DCM_ENRICH_MAP = [
+    ('dcm_PixelSpacing', None),        # 특수 처리 → Pixel Spacing X/Y
+    ('dcm_PulseSequence', 'Pulse Sequence'),
+    ('dcm_MatrixX', 'Matrix X'),
+    ('dcm_MatrixY', 'Matrix Y'),
+    ('dcm_MatrixZ', 'Matrix Z'),       # NumberOfFrames 우선, dcm_count fallback
+]
+
+
+def enrich_protocol_from_dcm_inventory(unique_csv: str, inventory_path: str, modality: str):
+    """기존 *_unique.csv에 DCM 인벤토리의 프로토콜 데이터 보강 (in-place 저장)
+
+    Pixel Spacing X/Y, Matrix X/Y/Z, Pulse Sequence 등 MRIQC에 없는 필드를
+    DCM 인벤토리에서 채움. 기존 값이 있는 셀은 건드리지 않음.
+
+    Args:
+        unique_csv: *_unique.csv 경로
+        inventory_path: dcm_inventory.json 경로
+        modality: 모달리티명 (e.g., 'T1')
+    """
+    import json
+
+    if not os.path.isfile(unique_csv):
+        logging.warning('unique_csv not found: %s' % unique_csv)
+        return
+    if not os.path.isfile(inventory_path):
+        logging.warning('inventory not found: %s' % inventory_path)
+        return
+
+    with open(inventory_path) as f:
+        inventory = json.load(f)
+
+    by_image_uid = inventory.get('by_image_uid', {})
+    if not by_image_uid:
+        logging.warning('by_image_uid not found in inventory')
+        return
+
+    df = pd.read_csv(unique_csv, low_memory=False)
+    uid_col = 'I_%s' % modality
+    if uid_col not in df.columns:
+        logging.warning('Column %s not found in %s' % (uid_col, unique_csv))
+        return
+
+    protocol_prefix = 'protocol/%s/' % modality
+    filled_count = 0
+    matched_count = 0
+
+    for idx, row in df.iterrows():
+        uid = row.get(uid_col)
+        if pd.isna(uid):
+            continue
+        uid_str = _normalize_uid(uid)
+
+        dcm_record = by_image_uid.get(uid_str, {})
+        if not dcm_record:
+            continue
+
+        matched_count += 1
+
+        # Pixel Spacing: [x, y] 또는 "x\\y" 형식
+        ps = dcm_record.get('dcm_PixelSpacing', '')
+        if ps:
+            ps_str = str(ps).replace('[', '').replace(']', '')
+            # Try comma-separated first (JSON list), then backslash
+            if ',' in ps_str:
+                parts = [p.strip() for p in ps_str.split(',')]
+            else:
+                parts = [p.strip() for p in ps_str.split('\\')]
+            for suffix, val in [('Pixel Spacing X', parts[0] if parts else ''),
+                                ('Pixel Spacing Y', parts[-1] if parts else '')]:
+                col = protocol_prefix + suffix
+                if col not in df.columns:
+                    df[col] = ''
+                existing = df.at[idx, col]
+                if (pd.isna(existing) or str(existing).strip() == '') and val:
+                    df.at[idx, col] = val
+                    filled_count += 1
+
+        # Other fields
+        for inv_key, output_name in _DCM_ENRICH_MAP:
+            if output_name is None:  # Pixel Spacing handled above
+                continue
+            col = protocol_prefix + output_name
+            if col not in df.columns:
+                df[col] = ''
+            existing = df.at[idx, col]
+            if pd.isna(existing) or str(existing).strip() == '':
+                val = dcm_record.get(inv_key, '')
+                # Matrix Z: dcm_count fallback
+                if inv_key == 'dcm_MatrixZ' and not val:
+                    val = dcm_record.get('dcm_count', '')
+                if val:
+                    val_str = str(val).strip()
+                    if val_str:
+                        df.at[idx, col] = val_str
+                        filled_count += 1
+
+    df.to_csv(unique_csv, index=False, quoting=csv.QUOTE_NONNUMERIC)
+    logging.info('Enriched %s: %d cells filled from DCM inventory (%d rows, %d matched UIDs)' % (
+        os.path.basename(unique_csv), filled_count, len(df), matched_count))
 
 
 # =============================================================================
