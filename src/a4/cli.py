@@ -34,7 +34,7 @@ from .pipeline import (
     build_baseline_csv, build_longitudinal_csvs, build_imaging_availability,
 )
 
-DEFAULT_OUTPUT_DIR = os.path.join(OUTPUT_BASE, 'A4_matching_v1')
+DEFAULT_OUTPUT_DIR = os.path.join(OUTPUT_BASE, 'matching')
 INVENTORY_FILENAME = 'nii_inventory.json'
 
 

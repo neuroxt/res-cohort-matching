@@ -182,7 +182,7 @@ DEMO/
 #### 디렉토리 구조
 
 ```
-DEMO/A4_matching_v1/
+DEMO/matching/
 ├── BASELINE.csv                     피험자당 1행 baseline (~1,890행 × 371열)
 ├── MERGED.csv                       전체 세션 통합 (~89K행)
 ├── MMSE_longitudinal.csv            MMSE 시계열 (~26K행)

@@ -32,3 +32,4 @@ vendor/ADNIMERGE2/build/
 
 # Logs
 *.log
+output/

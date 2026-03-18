@@ -134,7 +134,7 @@ a4-pipeline --longitudinal-only
 ## 출력 디렉토리
 
 ```
-A4/ORIG/DEMO/A4_matching_v1/
+A4/ORIG/DEMO/matching/
 ├── MERGED.csv                    (기존)
 ├── BASELINE.csv                  (신규)
 ├── MMSE_longitudinal.csv         (신규)

@@ -210,7 +210,7 @@ Located in `metadata/A4 Imaging data and docs/`:
     DEMO/
         Clinical/
             External Data/          # Blood biomarker CSVs
-        A4_matching_v1/             # Pipeline output
+        matching/             # Pipeline output
 ```
 
 ### Key Directories (Ignored)
