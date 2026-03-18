@@ -491,6 +491,10 @@ def build_baseline_csv(clinical: 'pd.DataFrame',
     logging.info('-------------------- BASELINE.csv --------------------')
 
     base = clinical.copy()
+    # screening _bl 인지점수 제거 — V6 값으로 대체
+    for drop_col in ['MMSE_bl', 'CDGLOBAL_bl', 'CDRSB_bl']:
+        if drop_col in base.columns:
+            base.drop(columns=[drop_col], inplace=True)
     logging.info('Clinical table: %d BIDs' % len(base))
 
     # 1. V6 인지점수 (MMSE, CDGLOBAL, CDRSB)
@@ -548,7 +552,12 @@ def build_baseline_csv(clinical: 'pd.DataFrame',
             if path:
                 base.at[bid, '%s_NII_PATH' % mod] = path
 
-    nii_filled = {mod: base['%s_NII_PATH' % mod].astype(str).ne('').sum()
+    # 빈 문자열 → NaN (MERGED.csv와 일관성)
+    for mod in ['T1', 'FLAIR', 'FTP', 'FBP']:
+        col = '%s_NII_PATH' % mod
+        base[col] = base[col].replace('', pd.NA)
+
+    nii_filled = {mod: base['%s_NII_PATH' % mod].notna().sum()
                   for mod in ['T1', 'FLAIR', 'FTP', 'FBP']}
     logging.info('Baseline NII paths: %s' % nii_filled)
 

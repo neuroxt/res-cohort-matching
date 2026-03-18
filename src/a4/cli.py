@@ -216,10 +216,16 @@ def main(argv=None):
     # --longitudinal-only
     if args.longitudinal_only:
         inventory = run_inventory_step(args.output_dir, nfs_base=args.nii_base)
+        clinical = run_clinical_step(
+            metadata_dir=args.metadata_dir,
+            clinical_dir=args.clinical_dir,
+            include_screen_fail=args.include_screen_fail,
+        )
         long_cognitive = build_longitudinal_cognitive(clinical_dir=args.clinical_dir)
         session_index = build_session_index(
             clinical_dir=args.clinical_dir,
             metadata_dir=args.metadata_dir,
+            allowed_bids=set(clinical.index) if not clinical.empty else None,
         )
         build_longitudinal_csvs(session_index, long_cognitive, args.output_dir)
         build_imaging_availability(inventory, session_index, args.output_dir)
