@@ -143,9 +143,6 @@ def parse_args(argv=None):
                         help='인벤토리 강제 재생성')
     parser.add_argument('--include-screen-fail', action='store_true',
                         help='amyloidNE (스크리닝 탈락) 포함 (기본: 제외)')
-    parser.add_argument('--group', type=str, default=None,
-                        help='특정 Research Group만 처리 (쉼표 구분)')
-
     return parser.parse_args(argv)
 
 

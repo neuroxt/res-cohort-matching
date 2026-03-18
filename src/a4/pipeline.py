@@ -80,10 +80,7 @@ def build_modality_csv(modality: str,
                 if isinstance(clin_row, pd.DataFrame):
                     clin_row = clin_row.iloc[0]
                 for col_name, val in clin_row.items():
-                    if pd.notna(val):
-                        row[col_name] = val
-                    else:
-                        row[col_name] = ''
+                    row[col_name] = val
 
             records.append(row)
 

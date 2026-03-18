@@ -438,6 +438,7 @@ def build_clinical_table(metadata_dir: str = None,
         logging.info('Cognitive: %d BIDs' % len(cognitive))
 
     # 5. VMRI (NeuroQuant)
+    #    (Step 6은 이전에 제거됨)
     vmri = _build_vmri(metadata_dir)
     if not vmri.empty:
         demo = demo.join(vmri, how='left')
@@ -483,7 +484,7 @@ def build_clinical_table(metadata_dir: str = None,
                 demo.loc[unclassified_mask, 'Research_Group'] = 'amyloidNE'
                 logging.info('Reclassified %d BIDs not in demography as amyloidNE', n_reclassified)
 
-    # 10. amyloidNE 제외 (기본값)
+    # 11. amyloidNE 제외 (기본값)
     if not include_screen_fail:
         before = len(demo)
         demo = demo[demo['Research_Group'] != 'amyloidNE']
@@ -534,6 +535,7 @@ def build_session_age_table(clinical_dir: str = None,
 
     # VISITCD → SESSION_CODE (3자리 zero-pad)
     sv = sv[['BID', 'VISITCD', 'SVSTDTC_DAYS_CONSENT']].dropna(subset=['SVSTDTC_DAYS_CONSENT'])
+    sv = sv.dropna(subset=['VISITCD'])
     sv['SESSION_CODE'] = sv['VISITCD'].astype(int).apply(lambda x: '%03d' % x)
 
     # BID별 AGEYR 조인
@@ -594,6 +596,7 @@ def build_session_index(clinical_dir: str = None,
         logging.info('Filtered to %d allowed BIDs → %d SV rows' % (len(allowed_bids), len(sv)))
 
     # VISITCD → SESSION_CODE (3자리 zero-pad)
+    sv = sv.dropna(subset=['VISITCD'])
     sv['SESSION_CODE'] = sv['VISITCD'].astype(int).apply(lambda x: '%03d' % x)
     sv.rename(columns={'SVSTDTC_DAYS_CONSENT': 'DAYS_CONSENT'}, inplace=True)
 
@@ -642,7 +645,7 @@ def build_longitudinal_cognitive(clinical_dir: str = None) -> pd.DataFrame:
         logging.info('mmse.csv (longitudinal) loaded: %d rows' % len(mmse))
 
         if 'BID' in mmse.columns and 'VISCODE' in mmse.columns and 'MMSCORE' in mmse.columns:
-            mmse = mmse[['BID', 'VISCODE', 'MMSCORE']].dropna(subset=['MMSCORE'])
+            mmse = mmse[['BID', 'VISCODE', 'MMSCORE']].dropna(subset=['MMSCORE', 'VISCODE'])
             mmse['SESSION_CODE'] = mmse['VISCODE'].astype(int).apply(lambda x: '%03d' % x)
             mmse = mmse.drop_duplicates(subset=['BID', 'SESSION_CODE'], keep='first')
             mmse = mmse[['BID', 'SESSION_CODE', 'MMSCORE']].set_index(['BID', 'SESSION_CODE'])
@@ -667,6 +670,7 @@ def build_longitudinal_cognitive(clinical_dir: str = None) -> pd.DataFrame:
 
             if out_cols:
                 cdr = cdr[cdr_cols].dropna(subset=out_cols, how='all')
+                cdr = cdr.dropna(subset=['VISCODE'])
                 cdr['SESSION_CODE'] = cdr['VISCODE'].astype(int).apply(lambda x: '%03d' % x)
                 cdr = cdr.drop_duplicates(subset=['BID', 'SESSION_CODE'], keep='first')
                 cdr = cdr[['BID', 'SESSION_CODE'] + out_cols].set_index(['BID', 'SESSION_CODE'])
