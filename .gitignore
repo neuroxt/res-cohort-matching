@@ -7,12 +7,8 @@ dist/
 build/
 *.egg
 
-# Generated CSV outputs (NFS 서버에 생성)
-csv/
-*.csv
-
-# Generated reports
-reports/
+# Generated outputs (NFS 서버에 생성되는 대용량 파일)
+output/
 
 # R build artifacts
 vendor/ADNIMERGE2/build/
@@ -32,4 +28,3 @@ vendor/ADNIMERGE2/build/
 
 # Logs
 *.log
-output/
