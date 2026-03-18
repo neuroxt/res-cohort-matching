@@ -9,6 +9,8 @@ build/
 
 # Generated outputs (NFS 서버에 생성되는 대용량 파일)
 output/
+csv/
+ADNIMERGE_*.csv
 
 # R build artifacts
 vendor/ADNIMERGE2/build/
