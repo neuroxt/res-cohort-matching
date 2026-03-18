@@ -497,17 +497,30 @@ def build_baseline_csv(clinical: 'pd.DataFrame',
             base.drop(columns=[drop_col], inplace=True)
     logging.info('Clinical table: %d BIDs' % len(base))
 
-    # 1. V6 인지점수 (MMSE, CDGLOBAL, CDRSB)
+    # 1. V6 인지점수 (MMSE는 V6, CDR은 V1 — A4 프로토콜상 CDR은 V6에서 미측정)
     if long_cognitive is not None and not long_cognitive.empty:
+        # MMSE: V6 (randomization)
         try:
             v6_cog = long_cognitive.xs('006', level='SESSION_CODE', drop_level=True)
             v6_cog = v6_cog[~v6_cog.index.duplicated(keep='first')]
-            for col in ['MMSE', 'CDGLOBAL', 'CDRSB']:
-                if col in v6_cog.columns:
-                    base[col] = v6_cog[col]
-            logging.info('V6 cognitive: %d BIDs matched' % len(v6_cog))
+            if 'MMSE' in v6_cog.columns:
+                base['MMSE'] = v6_cog['MMSE']
+            logging.info('V6 MMSE: %d BIDs matched' % v6_cog['MMSE'].notna().sum()
+                         if 'MMSE' in v6_cog.columns else 0)
         except KeyError:
             logging.warning('SESSION_CODE 006 not found in long_cognitive')
+
+        # CDR: V1 (screening — A4 프로토콜에서 CDR은 V1에서만 측정)
+        try:
+            v1_cog = long_cognitive.xs('001', level='SESSION_CODE', drop_level=True)
+            v1_cog = v1_cog[~v1_cog.index.duplicated(keep='first')]
+            for col in ['CDGLOBAL', 'CDRSB']:
+                if col in v1_cog.columns:
+                    base[col] = v1_cog[col]
+            logging.info('V1 CDR: %d BIDs matched' % v1_cog['CDGLOBAL'].notna().sum()
+                         if 'CDGLOBAL' in v1_cog.columns else 0)
+        except KeyError:
+            logging.warning('SESSION_CODE 001 not found in long_cognitive')
 
     # 2. V6 PTAGE (session_index에서 추출)
     if session_index is not None and not session_index.empty:
