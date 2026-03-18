@@ -228,7 +228,7 @@ Located in `metadata/A4 Imaging data and docs/`:
 | Modality classification | regex pattern matching | **folder name = modality** |
 | Matching strategy | EXAMDATE date matching (±180d) | **session_code direct join** |
 | Dates | Absolute (YYYY-MM-DD) | **De-identified (year only, EXAMDAY=relative days)** |
-| Subject ID | PTID (XXX_S_XXXX) | **BID (B[1-9][0-9]{8})** |
+| Subject ID | PTID (XXX_S_XXXX) | **BID (B[1-9][0-9]{7})** |
 | Clinical data | ADNIMERGE.rda (unified) | **51+ individual CSVs** |
 | Cohorts | ADNI 1/GO/2/3/4 | **A4(amyloidE) + LEARN(amyloidNE)** |
 

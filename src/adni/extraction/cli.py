@@ -28,7 +28,6 @@ from adni.config import ADNI_DEMO, ADNI_TABLES
 
 DEFAULT_RDA_DIR = os.path.join(PROJECT_ROOT, 'vendor', 'ADNIMERGE2', 'data')
 DEFAULT_OUTPUT_DIR = ADNI_DEMO
-DEFAULT_TABLES_DIR = ADNI_TABLES
 
 
 def setup_logging(verbose: bool = False):
