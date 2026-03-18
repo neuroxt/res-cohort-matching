@@ -23,7 +23,12 @@ from .config import (
     MODALITY_CONFIG, MERGE_EXCLUDE, LOG_FORMAT,
 )
 from .inventory import build_inventory, save_inventory, load_inventory
-from .clinical import build_clinical_table
+from .clinical import (
+    build_clinical_table,
+    build_session_age_table,
+    build_session_index,
+    build_longitudinal_cognitive,
+)
 from .pipeline import run_pipeline, unique_csv_merge
 
 DEFAULT_OUTPUT_DIR = os.path.join(OUTPUT_BASE, 'A4_matching_v1')
@@ -199,13 +204,32 @@ def main(argv=None):
         logging.error('Clinical table is empty — aborting pipeline')
         sys.exit(1)
 
-    # 3. Pipeline (inventory + clinical → modality CSVs → MERGED.csv)
+    # 3. Session-level tables (longitudinal)
+    session_ages = build_session_age_table(
+        clinical_dir=args.clinical_dir,
+        metadata_dir=args.metadata_dir,
+    )
+    long_cognitive = build_longitudinal_cognitive(
+        clinical_dir=args.clinical_dir,
+    )
+
+    # 4. Session index (전체 SV.csv 세션 → session-centric MERGED.csv)
+    session_index = build_session_index(
+        clinical_dir=args.clinical_dir,
+        metadata_dir=args.metadata_dir,
+        allowed_bids=set(clinical.index),
+    )
+
+    # 5. Pipeline (inventory + clinical → modality CSVs → MERGED.csv)
     run_pipeline(
         inventory=inventory,
         clinical=clinical,
         output_dir=args.output_dir,
         modalities=modalities,
         overwrite=args.overwrite,
+        session_ages=session_ages,
+        long_cognitive=long_cognitive,
+        session_index=session_index,
     )
 
     logging.info('Pipeline complete')

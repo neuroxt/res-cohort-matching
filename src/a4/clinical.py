@@ -13,8 +13,9 @@ import pandas as pd
 
 from .config import (
     NFS_METADATA_BASE, NFS_CLINICAL_BASE,
-    CLINICAL_CSV_FILES, IMAGING_CSV_FILES, TREATMENT_CSV,
+    CLINICAL_CSV_FILES, IMAGING_CSV_FILES,
     BIOMARKER_CSV_FILES, PTAU217_VISIT_MAP,
+    LONGITUDINAL_CSV_FILES,
     format_apoe_genotype, map_ptgender,
 )
 
@@ -101,9 +102,9 @@ def _build_amyloid_status(metadata_dir: str) -> pd.DataFrame:
 
     rename = {}
     if 'PMODSUVR' in amy.columns:
-        rename['PMODSUVR'] = 'AMY_SUVR'
+        rename['PMODSUVR'] = 'AMY_SUVR_bl'
     if 'SCORE' in amy.columns:
-        rename['SCORE'] = 'AMY_STATUS'
+        rename['SCORE'] = 'AMY_STATUS_bl'
     amy.rename(columns=rename, inplace=True)
 
     return amy
@@ -135,10 +136,10 @@ def _build_pet_suvr(metadata_dir: str) -> pd.DataFrame:
     rename = {}
     if 'suvr_cer' in composite.columns:
         cols.append('suvr_cer')
-        rename['suvr_cer'] = 'AMY_SUVR_CER'
+        rename['suvr_cer'] = 'AMY_SUVR_CER_bl'
     if 'centiloid' in composite.columns:
         cols.append('centiloid')
-        rename['centiloid'] = 'AMY_CENTILOID'
+        rename['centiloid'] = 'AMY_CENTILOID_bl'
 
     result = composite[cols].drop_duplicates(subset='BID', keep='first').copy()
     result.set_index('BID', inplace=True)
@@ -170,8 +171,8 @@ def _build_vmri(metadata_dir: str) -> pd.DataFrame:
     drop_cols = [c for c in ['VISCODE', 'Phase'] if c in vmri.columns]
     vmri.drop(columns=drop_cols, inplace=True, errors='ignore')
 
-    # 컬럼명에 VMRI_ 접두사 추가
-    vmri.columns = ['VMRI_' + c for c in vmri.columns]
+    # 컬럼명에 VMRI_ 접두사 + _bl suffix 추가
+    vmri.columns = ['VMRI_' + c + '_bl' for c in vmri.columns]
 
     return vmri
 
@@ -194,8 +195,8 @@ def _build_tau_suvr(metadata_dir: str) -> pd.DataFrame:
         tausuvr = tausuvr.rename(columns={bid_col: 'BID'})
     tausuvr.set_index('BID', inplace=True)
 
-    # 컬럼명에 TAU_ 접두사 추가
-    tausuvr.columns = ['TAU_' + c for c in tausuvr.columns]
+    # 컬럼명에 TAU_ 접두사 + _bl suffix 추가
+    tausuvr.columns = ['TAU_' + c + '_bl' for c in tausuvr.columns]
 
     return tausuvr
 
@@ -233,28 +234,12 @@ def _build_cognitive(metadata_dir: str) -> pd.DataFrame:
     for p in parts[1:]:
         result = result.join(p, how='outer')
 
+    # ADNI 호환 컬럼명 rename
+    result.rename(columns={'MMSCORE': 'MMSE', 'CDSOB': 'CDRSB'}, inplace=True)
+    # Baseline suffix 추가
+    result.columns = [c + '_bl' for c in result.columns]
+
     return result
-
-
-def _build_treatment(metadata_dir: str) -> pd.DataFrame:
-    """dose.csv → 치료군 정보 (BID 수준, amyloidE만)."""
-    dose = _load_csv(metadata_dir, TREATMENT_CSV)
-
-    if dose.empty or 'BID' not in dose.columns:
-        return pd.DataFrame()
-
-    dose = dose.drop_duplicates(subset='BID', keep='first')
-    dose.set_index('BID', inplace=True)
-
-    # DOSELEVEL: 1600(mg) = solanezumab, NaN = placebo
-    if 'DOSELEVEL' in dose.columns:
-        dose['TREATMENT'] = np.where(
-            dose['DOSELEVEL'].notna() & (dose['DOSELEVEL'] != ''),
-            'solanezumab',
-            'placebo',
-        )
-    cols = [c for c in ['DOSELEVEL', 'TREATMENT'] if c in dose.columns]
-    return dose[cols] if cols else pd.DataFrame()
 
 
 def _build_ptau217(clinical_dir: str) -> pd.DataFrame:
@@ -312,6 +297,69 @@ def _build_ptau217(clinical_dir: str) -> pd.DataFrame:
 
     result = result_parts[0]
     for p in result_parts[1:]:
+        # A4와 LEARN이 같은 컬럼명을 공유할 수 있음 (e.g., PTAU217_WK240)
+        # 같은 BID가 양쪽에 있을 수 없으므로 combine_first로 합침
+        overlap = result.columns.intersection(p.columns)
+        if len(overlap) > 0:
+            result = result.combine_first(p)
+        else:
+            result = result.join(p, how='outer')
+
+    return result
+
+
+def _build_roche_plasma(clinical_dir: str) -> pd.DataFrame:
+    """biomarker_Plasma_Roche_Results.csv → wide-format Roche plasma (BID 수준).
+
+    Screening(VISCODE=1) only.  6개 test를 wide-format으로 피벗:
+    ROCHE_GFAP, ROCHE_NFL, ROCHE_PTAU181, ROCHE_AB40, ROCHE_AB42, ROCHE_APOE4
+    + 각각 _BLQ flag
+    """
+    ext_dir = os.path.join(clinical_dir, 'External Data')
+    df = _load_csv(ext_dir, BIOMARKER_CSV_FILES['roche_plasma'])
+
+    if df.empty or 'BID' not in df.columns:
+        return pd.DataFrame()
+
+    for c in ['LBTESTCD', 'LABRESN']:
+        if c not in df.columns:
+            logging.warning('Roche plasma missing column: %s' % c)
+            return pd.DataFrame()
+
+    # Strip whitespace from LBTESTCD
+    df['LBTESTCD'] = df['LBTESTCD'].astype(str).str.strip()
+
+    # BLQ flag
+    df['_BLQ'] = df.get('LABRESC', pd.Series(dtype=str)).astype(str).str.upper().eq('BLQ')
+
+    # LBTESTCD → column name 매핑
+    test_map = {
+        'GFAP':    'ROCHE_GFAP',
+        'NF-L':    'ROCHE_NFL',
+        'TPP181':  'ROCHE_PTAU181',
+        'AMYLB40': 'ROCHE_AB40',
+        'AMYLB42': 'ROCHE_AB42',
+        'APOE4':   'ROCHE_APOE4',
+    }
+
+    parts = []
+    for test_cd, col_name in test_map.items():
+        sub = df[df['LBTESTCD'] == test_cd].copy()
+        if sub.empty:
+            continue
+        sub = sub.drop_duplicates(subset='BID', keep='first')
+        sub = sub[['BID', 'LABRESN', '_BLQ']].rename(columns={
+            'LABRESN': col_name + '_bl',
+            '_BLQ': col_name + '_BLQ_bl',
+        })
+        sub.set_index('BID', inplace=True)
+        parts.append(sub)
+
+    if not parts:
+        return pd.DataFrame()
+
+    result = parts[0]
+    for p in parts[1:]:
         result = result.join(p, how='outer')
 
     return result
@@ -389,13 +437,7 @@ def build_clinical_table(metadata_dir: str = None,
         demo = demo.join(cognitive, how='left')
         logging.info('Cognitive: %d BIDs' % len(cognitive))
 
-    # 5. Treatment (dose.csv)
-    treatment = _build_treatment(metadata_dir)
-    if not treatment.empty:
-        demo = demo.join(treatment, how='left')
-        logging.info('Treatment: %d BIDs' % len(treatment))
-
-    # 6. VMRI (NeuroQuant)
+    # 5. VMRI (NeuroQuant)
     vmri = _build_vmri(metadata_dir)
     if not vmri.empty:
         demo = demo.join(vmri, how='left')
@@ -413,15 +455,33 @@ def build_clinical_table(metadata_dir: str = None,
         demo = demo.join(ptau217, how='left')
         logging.info('pTau217: %d BIDs' % len(ptau217))
 
-    # 9. amyloidNE Research Group 보충 (demography.csv)
+    # 9. Roche plasma biomarkers
+    roche = _build_roche_plasma(clinical_dir)
+    if not roche.empty:
+        demo = demo.join(roche, how='left')
+        logging.info('Roche plasma: %d BIDs' % len(roche))
+
+    # 10. amyloidNE Research Group 보충 (demography.csv)
     demog_groups = _build_demography_groups(metadata_dir)
     if not demog_groups.empty:
-        # Research_Group이 비어있는 BID에 demography 값 채우기
+        # demography.csv 값이 있으면 무조건 override (screen fail 오분류 방지)
         demo = demo.join(demog_groups, how='outer')
         if 'Research_Group_demog' in demo.columns:
-            mask = demo['Research_Group'].isna() | (demo['Research_Group'] == '')
+            mask = demo['Research_Group_demog'].notna()
             demo.loc[mask, 'Research_Group'] = demo.loc[mask, 'Research_Group_demog']
             demo.drop(columns=['Research_Group_demog'], inplace=True)
+
+        # demography.csv에도 없고 LRNFLGSNM=N인 BID → amyloidNE로 재분류
+        # (PET screening 전 탈락 = 코호트 미배정)
+        if 'LRNFLGSNM' in demo.columns:
+            unclassified_mask = (
+                (demo['Research_Group'] == 'amyloidE') &
+                ~demo.index.isin(demog_groups.index)
+            )
+            n_reclassified = unclassified_mask.sum()
+            if n_reclassified > 0:
+                demo.loc[unclassified_mask, 'Research_Group'] = 'amyloidNE'
+                logging.info('Reclassified %d BIDs not in demography as amyloidNE', n_reclassified)
 
     # 10. amyloidNE 제외 (기본값)
     if not include_screen_fail:
@@ -431,3 +491,197 @@ def build_clinical_table(metadata_dir: str = None,
 
     logging.info('Clinical table complete: %d BIDs, %d columns' % (len(demo), len(demo.columns)))
     return demo
+
+
+def build_session_age_table(clinical_dir: str = None,
+                            metadata_dir: str = None) -> pd.DataFrame:
+    """SV.csv + SUBJINFO → 세션별 PTAGE 계산.
+
+    PTAGE = AGEYR + (SVSTDTC_DAYS_CONSENT / 365.25)
+
+    Args:
+        clinical_dir: DEMO/Clinical/ 경로 (SV.csv 위치)
+        metadata_dir: metadata/ 경로 (SUBJINFO 위치)
+
+    Returns:
+        DataFrame indexed by (BID, SESSION_CODE), column: PTAGE
+    """
+    if clinical_dir is None:
+        clinical_dir = NFS_CLINICAL_BASE
+    if metadata_dir is None:
+        metadata_dir = NFS_METADATA_BASE
+
+    # SV.csv 로드
+    sv_path = os.path.join(clinical_dir, LONGITUDINAL_CSV_FILES['sv'])
+    if not os.path.isfile(sv_path):
+        logging.warning('SV.csv not found: %s' % sv_path)
+        return pd.DataFrame()
+    sv = pd.read_csv(sv_path, low_memory=False)
+    logging.info('SV.csv loaded: %d rows' % len(sv))
+
+    for c in ['BID', 'VISITCD', 'SVSTDTC_DAYS_CONSENT']:
+        if c not in sv.columns:
+            logging.warning('SV.csv missing column: %s' % c)
+            return pd.DataFrame()
+
+    # SUBJINFO → AGEYR
+    subjinfo = _load_csv(metadata_dir, CLINICAL_CSV_FILES['subjinfo'])
+    if subjinfo.empty or 'AGEYR' not in subjinfo.columns:
+        logging.warning('SUBJINFO missing or no AGEYR column')
+        return pd.DataFrame()
+
+    ageyr = subjinfo[['BID', 'AGEYR']].drop_duplicates(subset='BID', keep='first')
+
+    # VISITCD → SESSION_CODE (3자리 zero-pad)
+    sv = sv[['BID', 'VISITCD', 'SVSTDTC_DAYS_CONSENT']].dropna(subset=['SVSTDTC_DAYS_CONSENT'])
+    sv['SESSION_CODE'] = sv['VISITCD'].astype(int).apply(lambda x: '%03d' % x)
+
+    # BID별 AGEYR 조인
+    sv = sv.merge(ageyr, on='BID', how='inner')
+
+    # 세션별 나이 계산
+    sv['PTAGE'] = (sv['AGEYR'] + sv['SVSTDTC_DAYS_CONSENT'] / 365.25).round(2)
+
+    result = sv[['BID', 'SESSION_CODE', 'PTAGE']].copy()
+    result = result.drop_duplicates(subset=['BID', 'SESSION_CODE'], keep='first')
+    result.set_index(['BID', 'SESSION_CODE'], inplace=True)
+
+    logging.info('Session age table: %d rows, %d unique BIDs' % (
+        len(result), result.index.get_level_values('BID').nunique()))
+    return result
+
+
+def build_session_index(clinical_dir: str = None,
+                        metadata_dir: str = None,
+                        allowed_bids: set = None) -> pd.DataFrame:
+    """SV.csv + SUBJINFO → 전체 세션 인덱스.
+
+    SV.csv의 모든 방문(VISITCD)을 기준으로 세션 마스터 인덱스 생성.
+    기존 build_session_age_table()의 상위 호환 — DAYS_CONSENT 추가.
+
+    Args:
+        clinical_dir: DEMO/Clinical/ 경로 (SV.csv 위치)
+        metadata_dir: metadata/ 경로 (SUBJINFO 위치)
+        allowed_bids: 포함할 BID 집합 (None이면 전체)
+
+    Returns:
+        DataFrame indexed by (BID, SESSION_CODE), columns: DAYS_CONSENT, PTAGE
+    """
+    if clinical_dir is None:
+        clinical_dir = NFS_CLINICAL_BASE
+    if metadata_dir is None:
+        metadata_dir = NFS_METADATA_BASE
+
+    # SV.csv 로드
+    sv_path = os.path.join(clinical_dir, LONGITUDINAL_CSV_FILES['sv'])
+    if not os.path.isfile(sv_path):
+        logging.warning('SV.csv not found: %s' % sv_path)
+        return pd.DataFrame()
+    sv = pd.read_csv(sv_path, low_memory=False)
+    logging.info('SV.csv loaded: %d rows' % len(sv))
+
+    for c in ['BID', 'VISITCD', 'SVSTDTC_DAYS_CONSENT']:
+        if c not in sv.columns:
+            logging.warning('SV.csv missing column: %s' % c)
+            return pd.DataFrame()
+
+    # SVSTDTC_DAYS_CONSENT가 NaN인 행 제거 (미방문 세션)
+    sv = sv[['BID', 'VISITCD', 'SVSTDTC_DAYS_CONSENT']].dropna(subset=['SVSTDTC_DAYS_CONSENT'])
+
+    # allowed_bids 필터
+    if allowed_bids is not None:
+        sv = sv[sv['BID'].isin(allowed_bids)]
+        logging.info('Filtered to %d allowed BIDs → %d SV rows' % (len(allowed_bids), len(sv)))
+
+    # VISITCD → SESSION_CODE (3자리 zero-pad)
+    sv['SESSION_CODE'] = sv['VISITCD'].astype(int).apply(lambda x: '%03d' % x)
+    sv.rename(columns={'SVSTDTC_DAYS_CONSENT': 'DAYS_CONSENT'}, inplace=True)
+
+    # SUBJINFO → AGEYR
+    subjinfo = _load_csv(metadata_dir, CLINICAL_CSV_FILES['subjinfo'])
+    if not subjinfo.empty and 'AGEYR' in subjinfo.columns:
+        ageyr = subjinfo[['BID', 'AGEYR']].drop_duplicates(subset='BID', keep='first')
+        sv = sv.merge(ageyr, on='BID', how='inner')
+        sv['PTAGE'] = (sv['AGEYR'] + sv['DAYS_CONSENT'] / 365.25).round(2)
+        sv.drop(columns=['AGEYR'], inplace=True)
+    else:
+        logging.warning('SUBJINFO missing or no AGEYR — PTAGE will be NaN')
+        sv['PTAGE'] = np.nan
+
+    result = sv[['BID', 'SESSION_CODE', 'DAYS_CONSENT', 'PTAGE']].copy()
+    result = result.drop_duplicates(subset=['BID', 'SESSION_CODE'], keep='first')
+    result.set_index(['BID', 'SESSION_CODE'], inplace=True)
+
+    logging.info('Session index: %d rows, %d unique BIDs' % (
+        len(result), result.index.get_level_values('BID').nunique()))
+    return result
+
+
+def build_longitudinal_cognitive(clinical_dir: str = None) -> pd.DataFrame:
+    """mmse.csv + cdr.csv → 세션별 인지 평가 (longitudinal).
+
+    VISCODE를 3자리 zero-pad하여 SESSION_CODE로 변환.
+    기존 _bl 컬럼과 별개로, 해당 세션에서 실제 측정된 값만 포함.
+
+    Args:
+        clinical_dir: DEMO/Clinical/ 경로
+
+    Returns:
+        DataFrame indexed by (BID, SESSION_CODE),
+        columns: MMSE, CDGLOBAL, CDRSB
+    """
+    if clinical_dir is None:
+        clinical_dir = NFS_CLINICAL_BASE
+
+    parts = []
+
+    # MMSE longitudinal
+    mmse_path = os.path.join(clinical_dir, LONGITUDINAL_CSV_FILES['mmse'])
+    if os.path.isfile(mmse_path):
+        mmse = pd.read_csv(mmse_path, low_memory=False)
+        logging.info('mmse.csv (longitudinal) loaded: %d rows' % len(mmse))
+
+        if 'BID' in mmse.columns and 'VISCODE' in mmse.columns and 'MMSCORE' in mmse.columns:
+            mmse = mmse[['BID', 'VISCODE', 'MMSCORE']].dropna(subset=['MMSCORE'])
+            mmse['SESSION_CODE'] = mmse['VISCODE'].astype(int).apply(lambda x: '%03d' % x)
+            mmse = mmse.drop_duplicates(subset=['BID', 'SESSION_CODE'], keep='first')
+            mmse = mmse[['BID', 'SESSION_CODE', 'MMSCORE']].set_index(['BID', 'SESSION_CODE'])
+            mmse.rename(columns={'MMSCORE': 'MMSE'}, inplace=True)
+            parts.append(mmse)
+    else:
+        logging.warning('mmse.csv (longitudinal) not found: %s' % mmse_path)
+
+    # CDR longitudinal
+    cdr_path = os.path.join(clinical_dir, LONGITUDINAL_CSV_FILES['cdr'])
+    if os.path.isfile(cdr_path):
+        cdr = pd.read_csv(cdr_path, low_memory=False)
+        logging.info('cdr.csv (longitudinal) loaded: %d rows' % len(cdr))
+
+        if 'BID' in cdr.columns and 'VISCODE' in cdr.columns:
+            cdr_cols = ['BID', 'VISCODE']
+            out_cols = []
+            for c in ['CDGLOBAL', 'CDSOB']:
+                if c in cdr.columns:
+                    cdr_cols.append(c)
+                    out_cols.append(c)
+
+            if out_cols:
+                cdr = cdr[cdr_cols].dropna(subset=out_cols, how='all')
+                cdr['SESSION_CODE'] = cdr['VISCODE'].astype(int).apply(lambda x: '%03d' % x)
+                cdr = cdr.drop_duplicates(subset=['BID', 'SESSION_CODE'], keep='first')
+                cdr = cdr[['BID', 'SESSION_CODE'] + out_cols].set_index(['BID', 'SESSION_CODE'])
+                cdr.rename(columns={'CDSOB': 'CDRSB'}, inplace=True)
+                parts.append(cdr)
+    else:
+        logging.warning('cdr.csv (longitudinal) not found: %s' % cdr_path)
+
+    if not parts:
+        return pd.DataFrame()
+
+    result = parts[0]
+    for p in parts[1:]:
+        result = result.join(p, how='outer')
+
+    logging.info('Longitudinal cognitive: %d rows, %d unique BIDs' % (
+        len(result), result.index.get_level_values('BID').nunique()))
+    return result

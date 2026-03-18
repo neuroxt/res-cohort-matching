@@ -77,30 +77,62 @@ Solanezumab did **not** significantly slow cognitive decline or reduce amyloid p
 
 ## 4. Visit/Session Structure
 
-### A4 (amyloidE) — Key Sessions
-| Session (NII) | Meaning | Imaging |
+### VISCODE (VISITCD) System
+
+SV.csv의 `VISITCD` ≡ NII 폴더의 `session_code` (동일 코딩). 3자리 zero-pad하여 SESSION_CODE로 변환 (e.g., VISITCD=2 → SESSION_CODE=002).
+
+| VISCODE Range | Category | Description |
 |---|---|---|
-| 002 | SCV2: Amyloid PET screening | FBP |
+| 1-117 | Scheduled | 프로토콜 예정 방문 (screening, baseline, follow-up) |
+| 701-705 | Unscheduled | 비예정 방문 (안전성 평가, 추가 검사) |
+| 997-999 | Termination | OLE(997), early termination(999) 등 |
+
+### A4 (amyloidE) — Key Sessions
+| Session (NII) | Meaning | Data |
+|---|---|---|
+| 001 | SCV1: Screening visit 1 | Cognitive (MMSE, CDR) |
+| 002 | SCV2: Amyloid PET screening | FBP, pTau217(일부) |
 | 004 | SCV4: Baseline MRI + full eval | T1, FLAIR, T2_SE, T2_star, fMRI, DWI, FTP |
-| 009 | Wk 12 follow-up | MRI |
+| 006 | Randomization / BL | Cognitive, pTau217_BL |
+| 009 | Wk 12 follow-up | MRI, pTau217_WK12 |
+| 012, 018, ... | Follow-up visits | Cognitive (MMSE, CDR) |
 | 027 | Wk 52 (~12mo) | MRI |
 | 048 | Wk 96 (~24mo) | MRI |
-| 066 | Wk 240: primary endpoint | MRI |
+| 066 | Wk 240: primary endpoint | MRI, pTau217_WK240 |
 | 072 | Wk 288: open-label extension | MRI |
 | 084 | Wk 336 | MRI |
 | 999 | Early termination | variable |
 
 ### LEARN (amyloidNE) — Key Sessions
-| Session (NII) | Meaning | Imaging |
+| Session (NII) | Meaning | Data |
 |---|---|---|
+| 001 | SCV1: Screening | Cognitive, pTau217_SCR |
 | 002 | SCV2: Amyloid PET screening (negative) | FBP |
 | **006** | Baseline MRI (**differs from A4's 004!**) | T1, FLAIR, T2_SE, T2_star, fMRI, DWI, FTP |
-| 024 | Wk 72 | MRI subset |
+| 012, 018, ... | Follow-up visits | Cognitive (MMSE, CDR) |
+| 024 | Wk 72 | MRI subset, pTau217_WK72 |
 | 048 | Wk 96 | MRI subset |
-| 066 | Wk 240 (end of observation) | MRI |
+| 066 | Wk 240 (end of observation) | MRI, pTau217_WK240 |
 | 999 | Special/ET | variable |
 
 **Note**: LEARN baseline MRI = session **006** (vs A4 = **004**). Extra 2 weeks for negative PET confirmation + LEARN enrollment.
+
+### Session vs Data Source
+
+이미징(MRI/PET)과 인지 평가(MMSE/CDR)는 서로 다른 VISCODE에서 수행됨:
+- **이미징**: VISCODE 2, 4, 9, 27, 48, 66, ...
+- **인지 평가**: VISCODE 1, 6, 12, 18, 24, ...
+
+### MERGED.csv 구조
+
+**Session-centric** (v2): SV.csv 전체 세션 기준 (~65K행). 각 행 = 하나의 (BID, SESSION_CODE).
+- `MODALITIES`: 해당 세션에 존재하는 모달리티 (comma-separated, e.g., "T1,FLAIR,FBP")
+- `{MOD}_NII_PATH`: 모달리티별 NII 경로 (e.g., T1_NII_PATH, FBP_NII_PATH)
+- `DAYS_CONSENT`: consent 기준 상대 일수
+- `PTAGE`: 세션별 동적 계산 (AGEYR + DAYS_CONSENT/365.25)
+- 이미징 없는 세션도 포함 → 인지 데이터(MMSE, CDR) 직접 참조 가능
+
+Per-modality `*_unique.csv`는 기존과 동일 (이미징 세션만 포함).
 
 ---
 
