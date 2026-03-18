@@ -29,7 +29,10 @@ from .clinical import (
     build_session_index,
     build_longitudinal_cognitive,
 )
-from .pipeline import run_pipeline, unique_csv_merge
+from .pipeline import (
+    run_pipeline, unique_csv_merge,
+    build_baseline_csv, build_longitudinal_csvs, build_imaging_availability,
+)
 
 DEFAULT_OUTPUT_DIR = os.path.join(OUTPUT_BASE, 'A4_matching_v1')
 INVENTORY_FILENAME = 'nii_inventory.json'
@@ -116,6 +119,10 @@ def parse_args(argv=None):
                       help='임상 테이블만 생성')
     mode.add_argument('--merge-only', action='store_true',
                       help='기존 *_unique.csv에서 MERGED.csv만 재생성')
+    mode.add_argument('--baseline-only', action='store_true',
+                      help='BASELINE.csv만 재생성')
+    mode.add_argument('--longitudinal-only', action='store_true',
+                      help='MMSE/CDR longitudinal + imaging availability CSV만 재생성')
 
     # 경로
     parser.add_argument('--output-dir', default=DEFAULT_OUTPUT_DIR,
@@ -183,6 +190,39 @@ def main(argv=None):
             include_screen_fail=args.include_screen_fail,
             output_dir=args.output_dir,
         )
+        return
+
+    # --baseline-only
+    if args.baseline_only:
+        inventory = run_inventory_step(args.output_dir, nfs_base=args.nii_base)
+        clinical = run_clinical_step(
+            metadata_dir=args.metadata_dir,
+            clinical_dir=args.clinical_dir,
+            include_screen_fail=args.include_screen_fail,
+        )
+        if clinical.empty:
+            logging.error('Clinical table is empty — aborting')
+            sys.exit(1)
+        long_cognitive = build_longitudinal_cognitive(clinical_dir=args.clinical_dir)
+        session_index = build_session_index(
+            clinical_dir=args.clinical_dir,
+            metadata_dir=args.metadata_dir,
+            allowed_bids=set(clinical.index),
+        )
+        build_baseline_csv(clinical, long_cognitive, session_index,
+                           inventory, args.output_dir)
+        return
+
+    # --longitudinal-only
+    if args.longitudinal_only:
+        inventory = run_inventory_step(args.output_dir, nfs_base=args.nii_base)
+        long_cognitive = build_longitudinal_cognitive(clinical_dir=args.clinical_dir)
+        session_index = build_session_index(
+            clinical_dir=args.clinical_dir,
+            metadata_dir=args.metadata_dir,
+        )
+        build_longitudinal_csvs(session_index, long_cognitive, args.output_dir)
+        build_imaging_availability(inventory, session_index, args.output_dir)
         return
 
     # 전체 파이프라인
