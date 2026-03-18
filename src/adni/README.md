@@ -25,18 +25,74 @@ src/adni/
 ```
 vendor/ADNIMERGE2/data/*.rda (217개)
     │
-    ▼  adni.extraction (rda_converter)
-csv/tables/*.csv (217개 1:1 변환, MRIQC.csv·APOERES.csv 포함)
+    ├─▶ adni.extraction --convert-all
+    │       → DEMO/tables/*.csv (212개 1:1 변환)
     │
-    ▼  adni.extraction (build_adnimerge)
-ADNIMERGE_{DATE}.csv (23,479행 × 132열)
+    ├─▶ adni.extraction --build-adnimerge
+    │       → DEMO/ADNIMERGE_{DATE}.csv (23,479행 × 132열)
+    │
+    ├─▶ adni.extraction --build-ucberkeley
+    │       → DEMO/UCBERKELEY*.csv (FDG, AMY, TAU, TAUPVC)
+    │
+    └─▶ adni.extraction --build-birth-dates
+            → DEMO/birth_dates.csv
     │
     ▼  adni.matching
-DCM 인벤토리 + ADNIMERGE 매칭
+    DCM 인벤토리 + ADNIMERGE 매칭
     │
     ▼
-{MOD}_all.csv → {MOD}_unique.csv → MERGED.csv (13,042행 × 782열)
+    DEMO/matching/{MOD}_unique.csv → MERGED.csv (13,042행 × 782열)
 ```
+
+## NFS 출력 디렉토리 구조
+
+```
+ADNI_New/ORIG/DEMO/
+├── ADNIMERGE_{DATE}.csv                 ← adni.extraction --build-adnimerge
+├── UCBERKELEYFDG_8MM_{DATE}.csv         ← adni.extraction --build-ucberkeley
+├── UCBERKELEY_AMY_6MM_{DATE}.csv        ←   〃
+├── UCBERKELEY_TAU_6MM_{DATE}.csv        ←   〃
+├── UCBERKELEY_TAUPVC_6MM_{DATE}.csv     ←   〃
+├── birth_dates.csv                      ← adni.extraction --build-birth-dates
+│
+├── tables/                              ← adni.extraction --convert-all
+│   ├── REGISTRY.csv                        ADNIMERGE2 .rda → CSV 1:1 변환 (212개)
+│   ├── PTDEMOG.csv                         매칭 파이프라인의 참조 테이블로도 사용
+│   ├── APOERES.csv                         (MRIQC.csv, APOERES.csv 등)
+│   ├── MRIQC.csv
+│   ├── DXSUM.csv                           ※ 각 CSV의 컬럼 정의·코딩 규칙은
+│   ├── ARM.csv                               LONI Data Dictionary PDF 참조
+│   └── ... (212개)                           → https://adni.loni.usc.edu/data-dictionary/
+│
+└── matching/                            ← adni.matching
+    ├── MERGED.csv                          전체 모달리티 통합 (13,042행 × 782열)
+    ├── {MOD}_unique.csv                    모달리티별 PTID×VISCODE 중복 제거
+    ├── {MOD}_all.csv                       모달리티별 전체 매칭 (중복 포함)
+    ├── dcm_inventory.json                  DCM 메타데이터 인벤토리
+    └── matching.log                        실행 로그
+```
+
+### `tables/` — RDA→CSV 변환 테이블
+
+ADNIMERGE2 R 패키지(`vendor/ADNIMERGE2/data/`)의 217개 `.rda` 파일을 `pyreadr`로 읽어
+1:1 CSV 변환한 결과. 5개는 지원되지 않는 형식으로 변환 실패하여 212개 생성.
+
+**용도**: `ADNIMERGE_{DATE}.csv` 빌드 시 소스 테이블, 매칭 파이프라인에서 MRIQC·APOERES 참조.
+
+**컬럼 정의 참조**: 각 테이블의 컬럼 정의, 코딩 규칙, 측정 방법은 LONI에서 제공하는
+Data Dictionary PDF를 참조한다. LONI 계정 로그인 후 아래에서 다운로드:
+
+- **LONI Data Dictionary**: https://adni.loni.usc.edu/data-dictionary/
+- **개별 테이블 문서**: https://adni.bitbucket.io/reference/ (테이블별 .html 및 Methods PDF)
+- **ADNIMERGE2 패키지 문서**: https://atri-biostats.github.io/ADNIMERGE2
+
+### `matching/` — DICOM 매칭 결과
+
+DCM 인벤토리 스캔 → ADNIMERGE 임상 데이터 매칭 → 모달리티별 CSV → 통합 MERGED.csv.
+
+- **`{MOD}_all.csv`**: 매칭된 모든 결과. 동일 피험자-방문에 여러 스캔이 있으면 중복 행 포함.
+- **`{MOD}_unique.csv`**: PTID × VISCODE_FIX 조합당 1행 유지 (중복 시 마지막, error 제외).
+- **`MERGED.csv`**: `*_unique.csv`를 outer join으로 병합한 최종 출력.
 
 ---
 
@@ -96,12 +152,14 @@ python -m adni.extraction --convert-all
 python -m adni.extraction --rda-dir /path/to/ADNIMERGE2/data --output-dir /path/to/csv --date 260213 -v
 ```
 
-### 출력
+### 출력 → `DEMO/`
 
 | 파일 | 설명 |
 |------|------|
 | `ADNIMERGE_{DATE}.csv` | 23,479행 × 132열, 4,498 피험자 |
-| `tables/*.csv` | 217개 .rda 1:1 CSV 변환 (MRIQC.csv, APOERES.csv 등 포함) |
+| `UCBERKELEY*_{DATE}.csv` | PET quantification (FDG, AMY, TAU, TAUPVC) |
+| `birth_dates.csv` | 추정 생년월일 (4,933 피험자) |
+| `tables/*.csv` | 212개 .rda → CSV 변환 (MRIQC, APOERES 등 포함) |
 
 상세 설명: [`extraction/README.md`](extraction/README.md)
 
@@ -151,18 +209,14 @@ python -m adni.matching --modality T1,AV45_6MM
 python -m adni.matching --merge-only --output /path/to/output
 ```
 
-### 출력
+### 출력 → `DEMO/matching/`
 
 | 파일 | 설명 |
 |------|------|
 | `{MOD}_all.csv` | 모달리티별 전체 매칭 결과 (중복 포함) |
 | `{MOD}_unique.csv` | PTID×VISCODE 중복 제거 (error 행 제외) |
 | `MERGED.csv` | 전체 모달리티 통합 (13,042행 × 782열, 3,278 피험자) |
-
-### `_all.csv` vs `_unique.csv`
-
-- **`_all.csv`**: 매칭된 모든 결과. 동일 피험자-방문에 여러 스캔이 있으면 중복 행 포함, VISCODE 매핑 실패(`error`) 행 포함.
-- **`_unique.csv`**: PTID × VISCODE_FIX 조합당 1행만 유지 (중복 시 마지막 항목, error 행 제외). MERGED.csv는 이 파일들을 병합하여 생성.
+| `dcm_inventory.json` | DCM 메타데이터 인벤토리 |
 
 ### 레퍼런스 코드 (`reference/`)
 

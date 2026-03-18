@@ -7,12 +7,10 @@ dist/
 build/
 *.egg
 
-# Generated CSV outputs (NFS 서버에 생성)
+# Generated outputs (NFS 서버에 생성되는 대용량 파일)
+output/
 csv/
-*.csv
-
-# Generated reports
-reports/
+ADNIMERGE_*.csv
 
 # R build artifacts
 vendor/ADNIMERGE2/build/
@@ -29,6 +27,7 @@ vendor/ADNIMERGE2/build/
 # Claude Code / Serena (로컬 설정)
 .claude/
 .serena/
+docs/superpowers/
 
 # Logs
 *.log
