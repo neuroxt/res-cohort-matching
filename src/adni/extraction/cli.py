@@ -10,7 +10,7 @@ cli.py — adni.extraction CLI 진입점
     --build-birth-dates  birth_dates.csv 생성 (PTDEMOG PTDOB → est_birth_date)
     --all                전부 실행 (기본)
     --rda-dir DIR        .rda 소스 디렉토리 (기본: vendor/ADNIMERGE2/data)
-    --output-dir DIR     출력 디렉토리 (기본: csv/)
+    --output-dir DIR     출력 디렉토리 (기본: $ADNI_NFS_ROOT/.../ORIG/DEMO)
     --date DATE          출력 날짜 문자열 YYMMDD (기본: 오늘)
 """
 
@@ -24,9 +24,11 @@ from datetime import datetime
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(SCRIPT_DIR)))
 
+from adni.config import ADNI_DEMO, ADNI_TABLES
+
 DEFAULT_RDA_DIR = os.path.join(PROJECT_ROOT, 'vendor', 'ADNIMERGE2', 'data')
-DEFAULT_OUTPUT_DIR = os.path.join(PROJECT_ROOT, 'csv')
-DEFAULT_TABLES_DIR = os.path.join(DEFAULT_OUTPUT_DIR, 'tables')
+DEFAULT_OUTPUT_DIR = ADNI_DEMO
+DEFAULT_TABLES_DIR = ADNI_TABLES
 
 
 def setup_logging(verbose: bool = False):
@@ -56,7 +58,7 @@ def main():
     parser.add_argument('--rda-dir', type=str, default=DEFAULT_RDA_DIR,
                         help='Path to .rda source directory (default: ADNIMERGE2/data)')
     parser.add_argument('--output-dir', type=str, default=DEFAULT_OUTPUT_DIR,
-                        help='Output directory (default: csv/)')
+                        help='Output directory (default: ADNI_DEMO)')
     parser.add_argument('--date', type=str, default=None,
                         help='Date string YYMMDD for output filenames (default: today)')
     parser.add_argument('-v', '--verbose', action='store_true',

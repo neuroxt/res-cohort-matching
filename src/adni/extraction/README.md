@@ -84,8 +84,19 @@ python -m adni.extraction --rda-dir /path/to/ADNIMERGE2/data --output-dir /path/
 
 | 파일 | 위치 | 설명 |
 |------|------|------|
-| `csv/tables/*.csv` | 217개 | .rda 원본 1:1 CSV 변환 (MRIQC.csv, APOERES.csv 포함) |
-| `csv/ADNIMERGE_{DATE}.csv` | 1개 | 12단계 빌드 최종 결과 |
+| `DEMO/tables/*.csv` | 212개 | .rda 원본 1:1 CSV 변환 (MRIQC.csv, APOERES.csv 포함) |
+| `DEMO/ADNIMERGE_{DATE}.csv` | 1개 | 12단계 빌드 최종 결과 |
+| `DEMO/UCBERKELEY*_{DATE}.csv` | 4개 | PET quantification (FDG, AMY, TAU, TAUPVC) |
+| `DEMO/birth_dates.csv` | 1개 | 추정 생년월일 (PTDEMOG PTDOB 기반) |
+
+### `tables/` 디렉토리
+
+ADNIMERGE2 R 패키지의 `.rda` 파일을 `pyreadr`로 CSV 변환한 결과.
+각 테이블의 컬럼 정의·코딩 규칙은 LONI Data Dictionary를 참조:
+
+- **LONI Data Dictionary**: https://adni.loni.usc.edu/data-dictionary/
+- **테이블별 문서**: https://adni.bitbucket.io/reference/
+- **ADNIMERGE2 패키지**: https://atri-biostats.github.io/ADNIMERGE2
 
 ---
 

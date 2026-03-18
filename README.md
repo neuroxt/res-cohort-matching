@@ -1,18 +1,56 @@
 # res-cohort-matching
 
-뇌영상 코호트 데이터 추출 및 DICOM 매칭 통합 파이프라인.
+뇌영상 코호트의 임상 데이터 추출 + DICOM/NII 매칭 파이프라인.
 
-코호트별 원본 데이터(R 패키지, CSV 등)를 Python으로 추출하고,
-NFS 서버의 DICOM 파일과 매칭하여 통합 CSV를 생성한다.
+LONI에서 제공하는 원본 데이터(R 패키지, CSV)를 Python으로 추출하고,
+NFS 서버의 영상 파일과 매칭하여 연구에 바로 사용할 수 있는 통합 CSV를 생성합니다.
 
 ---
 
 ## 지원 코호트
 
-| 코호트 | 상태 | 설명 |
-|--------|------|------|
-| **ADNI** (GO/1/2/3/4) | Active | Alzheimer's Disease Neuroimaging Initiative |
-| **NACC** | Planned | National Alzheimer's Coordinating Center |
+| 코호트 | 패키지 | 영상 | 상태 |
+|--------|--------|------|------|
+| **ADNI** GO/1/2/3/4 | `src/adni/` | DICOM | Active |
+| **A4/LEARN** | `src/a4/` | NIfTI | Active |
+| **NACC** | `src/nacc/` | — | Planned |
+
+---
+
+## 빠른 시작
+
+### 1. 설치
+
+```bash
+pip install -e .
+```
+
+### 2. ADNI 파이프라인
+
+```bash
+# Step 1: .rda → CSV 추출 + ADNIMERGE 빌드 (tables/, ADNIMERGE, UCBERKELEY, birth_dates)
+adni-extract --all
+
+# Step 2: DICOM 매칭 → MERGED.csv
+adni-match --modality T1,AV45_6MM
+
+# Step 2 (이미 매칭된 CSV가 있다면): MERGED.csv만 재생성
+adni-match --merge-only
+```
+
+### 3. A4/LEARN 파이프라인
+
+```bash
+# 전체 파이프라인 (NII inventory + clinical + MERGED.csv)
+a4-pipeline
+
+# 특정 모달리티만
+a4-pipeline --modality T1,FBP
+
+# NII inventory만 / 임상 테이블만
+a4-pipeline --inventory-only
+a4-pipeline --clinical-only
+```
 
 ---
 
@@ -20,45 +58,132 @@ NFS 서버의 DICOM 파일과 매칭하여 통합 CSV를 생성한다.
 
 ```
 res-cohort-matching/
+│
 ├── src/
-│   └── adni/                   # ADNI 코호트 파이프라인
-│       ├── extraction/         #   Part 1: .rda → ADNIMERGE CSV 추출
-│       └── matching/           #   Part 2: DICOM 매칭 파이프라인
-│           └── reference/      #     레퍼런스 코드 (수정 금지)
+│   ├── adni/                      # ADNI 코호트
+│   │   ├── config.py              #   공통 NFS 경로 설정
+│   │   ├── extraction/            #   Part 1: .rda → CSV 추출
+│   │   │   ├── build_adnimerge.py #     ADNIMERGE + UCBERKELEY 빌드
+│   │   │   ├── rda_converter.py   #     .rda → CSV 일괄 변환
+│   │   │   └── cli.py             #     CLI (adni-extract)
+│   │   └── matching/              #   Part 2: DICOM 매칭
+│   │       ├── config.py          #     모달리티별 설정
+│   │       ├── inventory.py       #     DCM 디렉토리 스캔
+│   │       ├── matching.py        #     이미지-임상 매칭 로직
+│   │       ├── merge.py           #     *_unique.csv → MERGED.csv
+│   │       ├── cli.py             #     CLI (adni-match)
+│   │       └── reference/         #     레퍼런스 코드 (수정 금지)
+│   │
+│   └── a4/                        # A4/LEARN 코호트
+│       ├── config.py              #   NFS 경로, 모달리티, JSON 필드맵
+│       ├── inventory.py           #   NII 폴더 스캔 → JSON inventory
+│       ├── clinical.py            #   임상 CSV → 통합 DataFrame
+│       ├── pipeline.py            #   모달리티 CSV + merge
+│       └── cli.py                 #   CLI (a4-pipeline)
 │
-├── vendor/                     # 원본 데이터 패키지 (수정 금지)
-│   └── ADNIMERGE2/             #   LONI ADNIMERGE2 R 패키지
+├── vendor/                        # 원본 데이터 패키지 (수정 금지)
+│   └── ADNIMERGE2/                #   LONI ADNIMERGE2 R 패키지 (v0.1.1)
 │
-├── scripts/                    # 검증 및 유틸리티 스크립트
-├── csv/                        # 추출된 CSV 출력
+├── scripts/                       # 분석 및 유틸리티 스크립트
+├── docs/                          # 데이터 카탈로그, 컬럼 사전 등
 └── pyproject.toml
 ```
 
 ---
 
-## Quick Start
+## NFS 출력 구조
 
-```bash
-# 설치
-pip install -e .
+각 코호트의 파이프라인은 NFS 서버에 아래 구조로 결과를 저장합니다.
 
-# ADNI: .rda → CSV 추출 + ADNIMERGE 구축
-adni-extract --all
+### ADNI → `ADNI_New/ORIG/DEMO/`
 
-# ADNI: DICOM 매칭 파이프라인
-adni-match --skip-inventory --modality T1,AV45
+```
+DEMO/
+├── ADNIMERGE_{DATE}.csv             ADNIMERGE 통합 CSV (23,479행 × 132열)
+├── UCBERKELEY*_{DATE}.csv           PET quantification (FDG, AMY, TAU, TAUPVC)
+├── birth_dates.csv                  추정 생년월일
+│
+├── tables/                          .rda → CSV 1:1 변환 (212개)
+│   ├── REGISTRY.csv                   방문 레지스트리
+│   ├── PTDEMOG.csv                    인구통계
+│   ├── APOERES.csv                    APOE 유전형
+│   ├── MRIQC.csv                      MRI QC 프로토콜
+│   ├── DXSUM.csv                      진단 요약
+│   └── ...
+│
+└── matching/                        DICOM 매칭 결과
+    ├── MERGED.csv                     전체 모달리티 통합 (13,042행 × 782열)
+    ├── {MOD}_unique.csv               모달리티별 (PTID×VISCODE 중복 제거)
+    ├── {MOD}_all.csv                  모달리티별 (전체, 중복 포함)
+    ├── dcm_inventory.json             DCM 메타데이터 인벤토리
+    └── matching.log
+```
+
+### A4/LEARN → `A4/ORIG/DEMO/`
+
+```
+DEMO/A4_matching_v1/
+├── MERGED.csv                       전체 세션 통합 (~65K행)
+├── {MOD}_unique.csv                 모달리티별
+├── clinical_table.csv               통합 임상 테이블
+├── nii_inventory.json               NII 인벤토리
+└── a4_pipeline.log
 ```
 
 ---
 
-## 코호트별 문서
+## `tables/` 디렉토리 안내
 
-- **ADNI**: [`src/adni/README.md`](src/adni/README.md) - 데이터 흐름, CLI 옵션, 모달리티 목록
-- **ADNI Extraction**: [`src/adni/extraction/README.md`](src/adni/extraction/README.md) - ADNIMERGE 구축 상세
+`tables/`에 있는 CSV들은 ADNIMERGE2 R 패키지의 `.rda` 파일을 Python(`pyreadr`)으로 변환한 것입니다.
+각 테이블의 컬럼 정의와 코딩 규칙을 이해하려면 LONI에서 제공하는 문서를 참조하세요:
+
+| 자료 | 링크 |
+|------|------|
+| LONI Data Dictionary | https://adni.loni.usc.edu/data-dictionary/ |
+| 테이블별 문서 (.html, Methods PDF) | https://adni.bitbucket.io/reference/ |
+| ADNIMERGE2 R 패키지 문서 | https://atri-biostats.github.io/ADNIMERGE2 |
+
+> LONI Data Dictionary의 PDF 다운로드에는 LONI 계정이 필요합니다.
+> 계정이 없다면 https://ida.loni.usc.edu 에서 신청할 수 있습니다.
+
+---
+
+## 코호트별 상세 문서
+
+| 문서 | 내용 |
+|------|------|
+| [`src/adni/README.md`](src/adni/README.md) | ADNI 전체: 데이터 흐름, 12단계 빌드, 매칭 로직, 검증 결과 |
+| [`src/adni/extraction/README.md`](src/adni/extraction/README.md) | ADNIMERGE 빌드 상세, 레퍼런스 대비 재현성 검증 |
+| [`docs/A4_protocol.md`](docs/A4_protocol.md) | A4/LEARN 프로토콜 정리 |
+| [`docs/A4_data_catalog.md`](docs/A4_data_catalog.md) | A4 NFS 파일 카탈로그 |
+
+---
+
+## CLI 명령어 요약
+
+| 명령어 | 설명 |
+|--------|------|
+| `adni-extract` | ADNIMERGE2 .rda → CSV 추출 (tables, ADNIMERGE, UCBERKELEY, birth_dates) |
+| `adni-match` | ADNI DICOM 매칭 → MERGED.csv |
+| `a4-pipeline` | A4/LEARN NII inventory + clinical → MERGED.csv |
+
+각 명령어에 `--help`를 붙이면 전체 옵션을 확인할 수 있습니다.
 
 ---
 
 ## 의존성
 
-- Python >= 3.9
-- numpy, pandas, pydicom, pyreadr, joblib
+| 패키지 | 용도 |
+|--------|------|
+| numpy | 수치 연산 |
+| pandas | 데이터 처리 |
+| pydicom | DICOM 메타데이터 추출 (ADNI) |
+| pyreadr | .rda 파일 읽기 |
+| joblib | 병렬 처리 |
+
+```bash
+pip install -e .          # 개발 모드 설치 (의존성 자동 설치)
+pip install -r requirements.txt  # 또는 직접 설치
+```
+
+Python >= 3.9 필요.
