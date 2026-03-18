@@ -25,7 +25,7 @@ for _font in ("AppleGothic", "NanumGothic", "Malgun Gothic"):
 matplotlib.rcParams["axes.unicode_minus"] = False
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DATA = ROOT / "output" / "ADNI_matching_v4"
+DATA = ROOT / "output" / "matching"
 OUT = ROOT / "output" / "av1451_t1_gap"
 OUT.mkdir(parents=True, exist_ok=True)
 

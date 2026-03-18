@@ -17,13 +17,13 @@ verify_adnimerge_1toN.py — ADNIMERGE 1:N 할당 검증
 
 Usage:
   python scripts/verify_adnimerge_1toN.py \\
-    --merged output/ADNI_matching_v4/MERGED.csv \\
-    --adnimerge csv/ADNIMERGE_260213.csv \\
+    --merged DEMO/matching/MERGED.csv \\
+    --adnimerge DEMO/ADNIMERGE_260316.csv \\
     --label "new"
 
   python scripts/verify_adnimerge_1toN.py \\
-    --merged output/ADNI_matching_v4/MERGED.csv \\
-    --adnimerge csv/ADNIMERGE_260213.csv \\
+    --merged DEMO/matching/MERGED.csv \\
+    --adnimerge DEMO/ADNIMERGE_260316.csv \\
     --merged2 /Volumes/nfs_storage-1/1_combined/ADNI/ORIG/DEMO/ADNI_matching_240826/MERGED.csv \\
     --adnimerge2 csv/ref/ADNIMERGE_240821.csv \\
     --label "new" --label2 "ref" \\

@@ -2,8 +2,12 @@
 config.py — A4/LEARN 전용 설정
 
 NFS 경로, 모달리티 설정, JSON sidecar 필드 매핑, 임상 CSV 파일 매핑.
+
+환경변수 A4_NFS_ROOT로 NFS 루트 경로 오버라이드 가능:
+    export A4_NFS_ROOT=/mnt/nfs/A4
 """
 
+import os
 import re
 
 # =============================================================================
@@ -12,12 +16,15 @@ import re
 LOG_FORMAT = '%(asctime)s | %(levelname)-5s | %(message)s'
 
 # =============================================================================
-# NFS 경로
+# NFS 경로 (환경변수 A4_NFS_ROOT로 오버라이드 가능)
 # =============================================================================
-NFS_NII_BASE = '/Volumes/nfs_storage/1_combined/A4/ORIG/NII'
-NFS_METADATA_BASE = '/Volumes/nfs_storage/1_combined/A4/ORIG/metadata'
-NFS_CLINICAL_BASE = '/Volumes/nfs_storage/1_combined/A4/ORIG/DEMO/Clinical'
-OUTPUT_BASE = '/Volumes/nfs_storage/1_combined/A4/ORIG/DEMO'
+_A4_ROOT = os.environ.get('A4_NFS_ROOT', '/Volumes/nfs_storage/1_combined/A4')
+_A4_ORIG = os.path.join(_A4_ROOT, 'ORIG')
+
+NFS_NII_BASE = os.path.join(_A4_ORIG, 'NII')
+NFS_METADATA_BASE = os.path.join(_A4_ORIG, 'metadata')
+NFS_CLINICAL_BASE = os.path.join(_A4_ORIG, 'DEMO', 'Clinical')
+OUTPUT_BASE = os.path.join(_A4_ORIG, 'DEMO')
 
 # =============================================================================
 # BID 정규식 (B + 1자리 비제로 + 8자리)

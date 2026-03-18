@@ -417,7 +417,7 @@ def plot_heatmap(count_df, pct_df, viscode_cols, cohort_name, total_bids,
 def main():
     parser = argparse.ArgumentParser(description='A4/LEARN data availability heatmap')
     parser.add_argument('--merged-csv',
-                        default='/Users/jeon-younghoon/Desktop/ADNI_match/output/a4/MERGED.csv',
+                        required=True,
                         help='Path to session-centric MERGED.csv')
     parser.add_argument('--output-dir', default=None,
                         help='Output directory (default: same as MERGED.csv)')
