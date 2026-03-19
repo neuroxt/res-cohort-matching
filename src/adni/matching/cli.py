@@ -182,8 +182,8 @@ def main():
                         help='Directory containing UCBerkeley CSV tables')
     parser.add_argument('--skip-ucberkeley', action='store_true',
                         help='Skip UCBerkeley PET quantification attach')
-    parser.add_argument('--enrich-protocol', action='store_true',
-                        help='Enrich existing *_unique.csv with MRIQC protocol data, then rebuild MERGED.csv')
+    parser.add_argument('--skip-enrich-protocol', action='store_true',
+                        help='Skip MRIQC/DCM protocol enrichment (기본: enrichment 실행)')
     args = parser.parse_args()
 
     # 출력 디렉토리 생성
@@ -213,23 +213,6 @@ def main():
 
     # Merge-only 모드
     if args.merge_only:
-        unique_csv_merge(args.output_dir, exclude_modalities=MERGE_EXCLUDE)
-        return
-
-    # Enrich-protocol 모드: 기존 *_unique.csv에 MRIQC + DCM inventory 보강 → MERGED.csv 재생성
-    if args.enrich_protocol:
-        unique_csvs = sorted(glob(os.path.join(args.output_dir, '*_unique.csv')))
-        if not unique_csvs:
-            logging.error('No *_unique.csv found in %s' % args.output_dir)
-            sys.exit(1)
-        inventory_path = os.path.join(args.output_dir, 'dcm_inventory.json')
-        for csv_path in unique_csvs:
-            mod = os.path.basename(csv_path).replace('_unique.csv', '')
-            logging.info('Enriching %s with MRIQC protocol data...' % mod)
-            enrich_protocol_from_mriqc(csv_path, args.mriqc, mod)
-            if os.path.isfile(inventory_path):
-                logging.info('Enriching %s with DCM inventory data...' % mod)
-                enrich_protocol_from_dcm_inventory(csv_path, inventory_path, mod)
         unique_csv_merge(args.output_dir, exclude_modalities=MERGE_EXCLUDE)
         return
 
@@ -283,6 +266,16 @@ def main():
             output_dir=args.output_dir,
             ucb_tables_dir=args.ucb_tables_dir,
         )
+
+    # Protocol enrichment (MRIQC + DCM inventory → protocol/* 컬럼 보강)
+    if not args.skip_enrich_protocol:
+        unique_csvs = sorted(glob(os.path.join(args.output_dir, '*_unique.csv')))
+        inventory_path = os.path.join(args.output_dir, 'dcm_inventory.json')
+        for csv_path in unique_csvs:
+            mod = os.path.basename(csv_path).replace('_unique.csv', '')
+            enrich_protocol_from_mriqc(csv_path, args.mriqc, mod)
+            if os.path.isfile(inventory_path):
+                enrich_protocol_from_dcm_inventory(csv_path, inventory_path, mod)
 
     # MERGED.csv 생성
     unique_csv_merge(args.output_dir, exclude_modalities=MERGE_EXCLUDE)

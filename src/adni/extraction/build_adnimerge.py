@@ -144,18 +144,37 @@ VALID_VISCODES_R = {'bl', 'sc',
 # Main Build Function
 # =============================================================================
 
-def build_adnimerge(rda_dir: str, output_dir: str, date_str: str = None):
+def build_adnimerge(rda_dir: str, output_dir: str, date_str: str = None,
+                    tables_dir: str = None):
     """Build ADNIMERGE CSV from .rda files.
 
     Args:
         rda_dir: Path to ADNIMERGE2/data/ directory
         output_dir: Path to csv/ directory
         date_str: Date string for output filename (YYMMDD), defaults to today
+        tables_dir: CSV override directory. 이름이 일치하는 CSV가 있으면
+                    .rda 대신 사용 (LONI에서 직접 다운로드한 최신 CSV 반영용).
+                    날짜 suffix 패턴도 지원 (e.g., TABLE_19Mar2026.csv).
     """
     if date_str is None:
         date_str = datetime.now().strftime('%y%m%d')
 
     def _load(name):
+        base_name = name.replace('.rda', '')
+        # tables_dir에 CSV가 있으면 우선 사용
+        if tables_dir:
+            exact = os.path.join(tables_dir, base_name + '.csv')
+            if os.path.isfile(exact):
+                logger.info('  [CSV override] %s → %s' % (name, exact))
+                return pd.read_csv(exact, low_memory=False)
+            # 날짜 suffix 패턴 (e.g., TABLE_19Mar2026.csv)
+            from glob import glob as _glob
+            pattern = os.path.join(tables_dir, base_name + '_*.csv')
+            matches = sorted(_glob(pattern))
+            if matches:
+                csv_path = matches[-1]  # 최신 파일
+                logger.info('  [CSV override] %s → %s' % (name, csv_path))
+                return pd.read_csv(csv_path, low_memory=False)
         return load_rda(os.path.join(rda_dir, name))
 
     # =========================================================================
