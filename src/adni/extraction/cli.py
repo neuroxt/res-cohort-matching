@@ -97,7 +97,8 @@ def main():
         from adni.extraction.build_adnimerge import build_adnimerge
         logging.info('')
         logging.info('--- Building ADNIMERGE CSV ---')
-        build_adnimerge(args.rda_dir, args.output_dir, date_str)
+        build_adnimerge(args.rda_dir, args.output_dir, date_str,
+                        tables_dir=tables_dir)
 
     # Step 3: Build UCBERKELEY PET CSVs
     if run_all or args.build_ucberkeley:
