@@ -23,6 +23,23 @@ LEARN은 아밀로이드 음성 대조군의 관찰 연구입니다.
 
 프로토콜 상세: [`docs/A4_protocol.md`](../../docs/A4_protocol.md)
 
+#### Baseline 정의 (중요)
+
+A4는 ADNI와 달리 screening부터 randomization까지 **여러 방문(V1~V6)에 걸쳐 baseline 데이터가 수집**됩니다.
+우리 파이프라인에서는 이 V1~V6을 하나의 **"Baseline"** 시점으로 통합하여 사용합니다.
+
+```
+V1 (screening)  → CDR, 혈액 바이오마커 (pTau217, Roche panel)
+V2 (PET scan)   → Amyloid PET (FBP), 아밀로이드 적격성 판정
+V4 (MRI)        → T1, FLAIR, Tau PET (FTP), MRI 볼륨 (VMRI 50 ROI)
+V6 (randomization) → MMSE, 최종 등록 확정
+```
+
+`BASELINE.csv`는 이 모든 시점의 데이터를 **피험자당 1행**으로 통합한 것입니다.
+따라서 BASELINE.csv의 한 행에는 V1의 CDR, V2의 PET, V4의 MRI, V6의 MMSE가 함께 들어있습니다.
+
+> LEARN은 V4가 아닌 **V6에서 MRI가 촬영**됩니다. 이 차이는 파이프라인에서 자동 처리됩니다.
+
 ### 2단계: 출력 CSV 선택
 
 파이프라인이 생성하는 CSV 중 연구 목적에 맞는 것을 골라 쓰세요.
@@ -68,8 +85,7 @@ LEARN은 아밀로이드 음성 대조군의 관찰 연구입니다.
 
 ## BASELINE.csv 상세
 
-피험자당 1행으로 통합된 baseline 데이터. A4에서는 screening(V1~V5) + randomization(V6)을
-거쳐 최종 baseline이 확정되므로, 이 여러 시점의 데이터를 하나로 모은 것입니다.
+위의 [Baseline 정의](#baseline-정의-중요)에서 설명한 대로, V1~V6의 데이터를 피험자당 1행으로 통합한 CSV입니다.
 
 ### 주요 컬럼
 
