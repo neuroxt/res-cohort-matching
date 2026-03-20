@@ -288,7 +288,14 @@ def build_session_merged(session_index: 'pd.DataFrame',
         # 빈 문자열 → NaN (CSV 정합성)
         base['MODALITIES'] = base['MODALITIES'].replace('', pd.NA)
 
-    # 6. 컬럼 정렬 + 저장
+    # 6. 빈 컬럼 제거 (JSON sidecar에 없는 protocol 필드 등)
+    empty_cols = [c for c in base.columns if base[c].notna().sum() == 0]
+    if empty_cols:
+        base.drop(columns=empty_cols, inplace=True)
+        logging.info('Dropped %d fully empty columns: %s' % (
+            len(empty_cols), ', '.join(empty_cols[:5]) + ('...' if len(empty_cols) > 5 else '')))
+
+    # 7. 컬럼 정렬 + 저장
     base = _reorder_columns(base)
     base.sort_index(inplace=True)
 
