@@ -87,25 +87,19 @@ V6 (randomization) → MMSE, 최종 등록 확정
 
 위의 [Baseline 정의](#baseline-정의-중요)에서 설명한 대로, V1~V6의 데이터를 피험자당 1행으로 통합한 CSV입니다.
 
-### 주요 컬럼
+| 컬럼 그룹 | 예시 | 소스 시점 | Fill |
+|-----------|------|-----------|------|
+| Demographics (7열) | PTGENDER, PTAGE, PTEDUCAT, APOEGN | screening | ~100% |
+| Amyloid PET (4열) | AMY_STATUS_bl, AMY_SUVR_bl, AMY_CENTILOID_bl | V2 | ~100% |
+| Cognitive (3열) | MMSE (V6), CDGLOBAL/CDRSB (V1) | V6/V1 | 91~100% |
+| pTau217 (14열) | PTAU217_BL, PTAU217_WK12, *_LLOQ | screening | 10~57% |
+| Roche Plasma (12열) | ROCHE_GFAP_bl, ROCHE_NFL_bl, *_BLQ | screening | 24~56% |
+| NII Paths (4열) | T1_NII_PATH, FBP_NII_PATH, FTP_NII_PATH | V2/V4 | 24~99% |
+| VMRI (51열) | VMRI_LeftHippocampus_bl 등 50 ROI | V4 | 66% |
+| TAU SUVR (273열) | TAU_Mean_Left_Hippocampus_bl 등 273 ROI | V4 | 24% |
 
-| 컬럼 그룹 | 예시 | 소스 시점 |
-|-----------|------|-----------|
-| Demographics | PTGENDER, PTAGE, PTEDUCAT, APOEGN | screening |
-| Amyloid PET | AMY_STATUS_bl, AMY_SUVR_bl, AMY_CENTILOID_bl | V2 (PET scan) |
-| 인지검사 | MMSE, CDGLOBAL, CDRSB | **V6** (randomization) |
-| MRI 볼륨 | VMRI_*_bl (50 ROI, NeuroQuant) | V4 (baseline MRI) |
-| Tau PET | TAU_*_bl (272 ROI, 서브셋 ~447명) | V4 |
-| 혈액 | PTAU217_BL, ROCHE_* (GFAP, NfL, pTau181 등) | screening |
-| 영상 경로 | T1_NII_PATH, FBP_NII_PATH, FTP_NII_PATH | V2/V4 |
-
-> **V1~V6 = 하나의 baseline**: 자세한 방문 체계는 [`docs/A4_protocol.md`](../../docs/A4_protocol.md) 참조.
-> LEARN은 MRI가 V6에서 촬영됩니다 (A4는 V4).
-
-### CDR 참고사항
-
-A4 프로토콜에서 CDR은 V1(screening)에서만 측정됩니다.
-V6(randomization)에서는 CDR 평가가 없으므로, BASELINE.csv의 CDGLOBAL/CDRSB는 V1 값입니다.
+컬럼별 상세 정의, 값 범위, 알려진 제한 사항(PTAGE 누락, CDR 소스 시점 등)은
+[`docs/A4_baseline_csv.md`](../../docs/A4_baseline_csv.md)를 참조하세요.
 
 ---
 
