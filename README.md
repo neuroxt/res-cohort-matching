@@ -127,71 +127,19 @@ DEMO/
 
 ### A4/LEARN → `A4/ORIG/DEMO/`
 
-**A4 Study** (Anti-Amyloid Treatment in Asymptomatic Alzheimer's)는 인지적으로 정상이지만
-뇌 아밀로이드가 축적된 고령자를 대상으로 한 Phase 3 임상시험입니다 (Solanezumab, Eli Lilly).
-**LEARN**은 아밀로이드 음성 대조군의 관찰 연구입니다.
+A4(아밀로이드 양성 임상시험) + LEARN(아밀로이드 음성 관찰연구). NIfTI 기반.
 
-| 코호트 | N | 아밀로이드 | 영상 |
-|--------|---|-----------|------|
-| **amyloidE** (A4 Trial) | 1,323 | 양성 (SUVr ≥ 1.15) | PET + MRI + Tau PET 서브셋 |
-| **LEARN amyloidNE** | 567 | 음성 | PET + MRI |
-| **amyloidNE** (screen fail) | 2,596 | 음성 | PET만 (MRI 없음) |
-
-자세한 프로토콜은 [`docs/A4_protocol.md`](docs/A4_protocol.md) 참조.
-
-#### 출력 CSV 안내
-
-파이프라인이 생성하는 CSV를 용도에 따라 골라 쓰세요:
-
-| 파일 | 용도 | 행 단위 | 규모 |
-|------|------|---------|------|
-| **`BASELINE.csv`** | cross-sectional 분석, 코호트 기술통계 | **피험자당 1행** (BID) | ~1,890행 |
-| **`MERGED.csv`** | 전체 세션 longitudinal 분석 | 세션당 1행 (BID × SESSION_CODE) | ~89K행 |
-| **`MMSE_longitudinal.csv`** | MMSE 시계열 분석 | 측정당 1행 | ~26K행 |
-| **`CDR_longitudinal.csv`** | CDR 시계열 분석 | 측정당 1행 | ~15K행 |
-| **`imaging_availability.csv`** | 세션별 영상 보유 현황 | 세션당 1행 | ~11K행 |
-
-> **처음 시작하는 연구자라면** `BASELINE.csv`부터 보세요.
-> 피험자당 1행으로 demographics, 아밀로이드 PET, MRI 볼륨, 인지검사, 혈액 바이오마커가 모두 들어있습니다.
-
-#### BASELINE.csv 주요 컬럼
-
-| 컬럼 그룹 | 예시 | 소스 시점 |
-|-----------|------|-----------|
-| Demographics | PTGENDER, PTAGE, PTEDUCAT, APOEGN | screening |
-| Amyloid PET | AMY_STATUS_bl, AMY_SUVR_bl, AMY_CENTILOID_bl | V2 (PET scan) |
-| 인지검사 | MMSE, CDGLOBAL, CDRSB | **V6** (randomization) |
-| MRI 볼륨 | VMRI_*_bl (50 ROI, NeuroQuant) | V4 (baseline MRI) |
-| Tau PET | TAU_*_bl (272 ROI, 서브셋 ~447명) | V4 |
-| 혈액 | PTAU217_BL, ROCHE_* (GFAP, NfL, pTau181 등) | screening |
-| 영상 경로 | T1_NII_PATH, FBP_NII_PATH, FTP_NII_PATH | V2/V4 |
-
-> **V1~V6 = 하나의 baseline**: A4에서는 screening(V1~V5) + randomization(V6)을 거쳐
-> 최종 baseline이 확정됩니다. BASELINE.csv는 이를 피험자당 1행으로 통합한 것입니다.
-
-#### imaging_availability.csv 예시
-
-| BID | SESSION_CODE | DAYS_CONSENT | T1 | FLAIR | FBP | FTP | ... |
-|-----|-------------|-------------|----|----|----|----|-----|
-| B10081264 | 002 | 0 | 0 | 0 | 1 | 0 | ... |
-| B10081264 | 004 | 14 | 1 | 1 | 0 | 1 | ... |
-| B10081264 | 027 | 365 | 1 | 1 | 0 | 0 | ... |
-
-1 = 해당 세션에 NII 파일 존재, 0 = 없음. 어떤 피험자가 어떤 시점에 어떤 영상을 보유하는지 한눈에 파악할 수 있습니다.
-
-#### 디렉토리 구조
+> **A4 데이터를 처음 쓰신다면** [`src/a4/README.md`](src/a4/README.md)를 먼저 읽어주세요.
+> 어떤 CSV를 써야 하는지, 어떤 문서를 참고해야 하는지 안내되어 있습니다.
 
 ```
 DEMO/matching/
-├── BASELINE.csv                     피험자당 1행 baseline (~1,890행 × 371열)
+├── BASELINE.csv                     피험자당 1행 baseline (~1,890행)
 ├── MERGED.csv                       전체 세션 통합 (~89K행)
-├── MMSE_longitudinal.csv            MMSE 시계열 (~26K행)
-├── CDR_longitudinal.csv             CDR 시계열 (~15K행)
-├── imaging_availability.csv         영상 보유 현황 (~11K행)
+├── MMSE/CDR_longitudinal.csv        시계열 인지검사
+├── imaging_availability.csv         세션별 영상 보유 현황
 ├── {MOD}_unique.csv                 모달리티별 매칭 결과
-├── clinical_table.csv               통합 임상 테이블 (중간 산출물)
-├── nii_inventory.json               NII 인벤토리
-└── a4_pipeline.log
+└── nii_inventory.json               NII 인벤토리
 ```
 
 ---
@@ -223,11 +171,12 @@ DEMO/matching/
 ### A4/LEARN
 | 문서 | 내용 |
 |------|------|
+| [`src/a4/README.md`](src/a4/README.md) | **시작 가이드** — CSV 선택, 참고 문서, BASELINE 상세, ADNI 차이점 |
 | [`docs/A4_protocol.md`](docs/A4_protocol.md) | 연구 프로토콜, 코호트 구조, 방문 체계, 영상/바이오마커 |
-| [`docs/A4_data_catalog.md`](docs/A4_data_catalog.md) | NFS 93 CSV + 20 PDF 전체 파일 카탈로그 |
 | [`docs/A4_column_dictionary.md`](docs/A4_column_dictionary.md) | MERGED.csv 출력 컬럼 사전 |
-| [`docs/A4_viscode_reference.md`](docs/A4_viscode_reference.md) | VISCODE ↔ SESSION_CODE 전체 매핑 (152개) |
-| [`docs/A4_join_relationships.md`](docs/A4_join_relationships.md) | 파일 간 조인 키·관계도·파이프라인 흐름 |
+| [`docs/A4_data_catalog.md`](docs/A4_data_catalog.md) | NFS 원본 파일 카탈로그 |
+| [`docs/A4_viscode_reference.md`](docs/A4_viscode_reference.md) | VISCODE <-> SESSION_CODE 매핑 |
+| [`docs/A4_join_relationships.md`](docs/A4_join_relationships.md) | 파일 간 조인 키, 관계도 |
 
 ---
 
