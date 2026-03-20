@@ -175,6 +175,7 @@ DEMO/matching/
 | 문서 | 내용 |
 |------|------|
 | [`src/a4/README.md`](src/a4/README.md) | **시작 가이드** — CSV 선택, 참고 문서, BASELINE 상세, ADNI 차이점 |
+| [`docs/A4_baseline_csv.md`](docs/A4_baseline_csv.md) | BASELINE.csv 컬럼 사전 (369열 상세, 알려진 제한사항) |
 | [`docs/A4_protocol.md`](docs/A4_protocol.md) | 연구 프로토콜, 코호트 구조, 방문 체계, 영상/바이오마커 |
 | [`docs/A4_column_dictionary.md`](docs/A4_column_dictionary.md) | MERGED.csv 출력 컬럼 사전 |
 | [`docs/A4_data_catalog.md`](docs/A4_data_catalog.md) | NFS 원본 파일 카탈로그 |
