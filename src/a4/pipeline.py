@@ -40,7 +40,9 @@ def build_modality_csv(modality: str,
     Returns:
         저장된 CSV 경로 (레코드 없으면 '')
     """
-    output_path = os.path.join(output_dir, '%s_unique.csv' % modality)
+    unique_dir = os.path.join(output_dir, 'unique')
+    os.makedirs(unique_dir, exist_ok=True)
+    output_path = os.path.join(unique_dir, '%s_unique.csv' % modality)
     if os.path.isfile(output_path) and not overwrite:
         logging.info('%s: already exists, skipping (use --overwrite)' % modality)
         return output_path
@@ -315,7 +317,8 @@ def unique_csv_merge(output_directory: str,
     logging.info('-------------------- A4 Unique CSV Merge --------------------')
     output_path = os.path.join(output_directory, output_filename)
 
-    flist = sorted(glob(os.path.join(output_directory, '*_unique.csv')))
+    unique_dir = os.path.join(output_directory, 'unique')
+    flist = sorted(glob(os.path.join(unique_dir, '*_unique.csv')))
 
     # 제외 모달리티 필터링
     if exclude_modalities:

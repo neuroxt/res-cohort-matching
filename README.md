@@ -139,8 +139,10 @@ DEMO/matching/
 ├── MERGED.csv                       전체 세션 통합 (~89K행)
 ├── MMSE/CDR_longitudinal.csv        시계열 인지검사
 ├── imaging_availability.csv         세션별 영상 보유 현황
-├── {MOD}_unique.csv                 모달리티별 매칭 결과
-└── nii_inventory.json               NII 인벤토리
+├── nii_inventory.json               NII 인벤토리
+└── unique/                          모달리티별 매칭 결과
+    ├── T1_unique.csv
+    └── ...
 ```
 
 ---

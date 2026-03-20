@@ -169,10 +169,13 @@ A4/ORIG/DEMO/matching/
 ├── MMSE_longitudinal.csv            MMSE 시계열 (~26K행)
 ├── CDR_longitudinal.csv             CDR 시계열 (~15K행)
 ├── imaging_availability.csv         영상 보유 현황 (~11K행)
-├── {MOD}_unique.csv                 모달리티별 매칭 결과
 ├── clinical_table.csv               통합 임상 테이블 (중간 산출물)
 ├── nii_inventory.json               NII 인벤토리
-└── a4_pipeline.log
+├── a4_pipeline.log
+└── unique/                          모달리티별 매칭 결과
+    ├── T1_unique.csv
+    ├── FBP_unique.csv
+    └── ...
 ```
 
 ---
