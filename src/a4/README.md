@@ -55,6 +55,31 @@ V6 (randomization) → MMSE, 최종 등록 확정
 > **처음이라면 `BASELINE.csv`부터 시작하세요.**
 > 피험자당 1행으로 demographics, 아밀로이드 PET, MRI 볼륨, 인지검사, 혈액 바이오마커가 모두 들어있습니다.
 
+#### ADNI MERGED.csv와의 차이 (중요)
+
+A4의 `MERGED.csv`는 ADNI의 `MERGED.csv`와 **성격이 다릅니다**.
+
+| | ADNI MERGED.csv | A4 MERGED.csv |
+|---|---|---|
+| 행 기준 | **영상 촬영일** 기준 — 해당 시점의 임상 데이터를 매칭 | **SV.csv 전체 세션** 기준 — 영상 없는 세션도 포함 |
+| 임상+영상 관계 | 같은 행에 같은 시점의 영상과 임상이 매칭됨 | 임상과 영상이 **다른 세션**에 있을 수 있음 |
+| 주 용도 | 그 자체로 분석에 바로 사용 | 세션 마스터 인덱스, 개별 CSV와 조합하여 사용 |
+
+**왜 다른가?** A4는 임상 평가(MMSE, CDR)와 영상 촬영(MRI, PET)이 **서로 다른 방문**에서
+이루어지는 경우가 많습니다. 예를 들어 MMSE는 V6에서, MRI는 V4에서, PET은 V2에서 촬영됩니다.
+ADNI처럼 "이 영상에 대응하는 임상 데이터"를 행 단위로 1:1 매칭하는 것이 구조적으로 맞지 않아서,
+우리 파이프라인에서는 이 매칭을 수행하지 않았습니다.
+
+**따라서 연구 시 권장하는 방법:**
+
+1. **Cross-sectional 분석** → `BASELINE.csv` 사용 (V1~V6 통합, 피험자당 1행)
+2. **Longitudinal 인지 변화** → `MMSE_longitudinal.csv` 또는 `CDR_longitudinal.csv` 사용
+3. **영상 보유 현황 확인** → `imaging_availability.csv`로 어떤 피험자가 어떤 시점에 어떤 영상을 가졌는지 확인
+4. **영상 + 임상 조합 분석** → `BASELINE.csv`의 임상 데이터 + `{MOD}_unique.csv`의 NII 경로를 BID로 직접 조인
+
+> `MERGED.csv`는 전체 세션의 마스터 인덱스로서, 세션별 DAYS_CONSENT, PTAGE, MODALITIES 등을
+> 확인하는 데 유용합니다. 하지만 **분석의 시작점은 `BASELINE.csv`**입니다.
+
 ### 3단계: 참고 문서 읽기
 
 | 문서 | 내용 | 언제 읽나요? |
