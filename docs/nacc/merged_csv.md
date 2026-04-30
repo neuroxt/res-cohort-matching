@@ -210,7 +210,7 @@ df['amy_frontal_mean'] = df[frontal_rois].mean(axis=1)
 2. **390 cols 중 일부는 visit 마다 결측 가능.** PACKET=T (telephone) 에서 B1/B8 폼 결측, A3/B3 optional 폼은 일부 visit에만 채움. CSF/PET SUVR은 측정한 visit에서만 채움. 분석 시 컬럼별 missingness 확인 필수.
 3. **`CSFDATEDIFF` / `AMYDATEDIFF` / `TAUDATEDIFF` 의 부호 컨벤션.** scan/CSF 일자 − visit 일자 (양수 = scan 이 visit 이후, 음수 = scan 이 visit 이전). join 시 윈도우는 절댓값 기준.
 4. **Tau PET ROI 이 Amyloid 보다 적음 (169 < 175).** Tau 는 DKT atlas 의 33 cortical ROI (frontalpole 제외) + 16 subcortical 만. Amyloid 는 35 cortical + 14 subcortical + chiasm + vessel. 같은 region 이름이라도 두 PET 에서 ROI 정의가 살짝 다를 수 있다 — 분석 시 주의.
-5. **`NACCNE4S` (APOE ε4 allele 수)** 는 NACC derived flag. APOE 유전자형 (E2/E3/E4) 자체는 별도 컬럼 (genetic data RDD 참조).
+5. **`NACCNE4S` (APOE ε4 allele 수)** 는 NACC derived flag (0/1/2/9). APOE 유전자형 pair 자체는 `merged.csv` 에 **포함되지 않음** — `Non_Commercial_Data/investigator_ftldlbd_nacc71.csv` 의 `NACCAPOE` 컬럼 (col idx 815, integer code 1~6) 을 `(NACCID, NACCVNUM)` 로 join 해야 한다. 자세한 인코딩 표 + workflow 는 [`optional_modules.md` §7 — Genetics (APOE)](optional_modules.md#7-genetics-apoe).
 6. **`merged_CDR.csv`는 v71 freeze에서 사라짐.** 2026-03-13 inventory에서는 보였으나 현재 freeze에는 없음. CDR 컬럼은 모두 `merged.csv` 안에 있음.
 
 > 검증일 2026-05-01 (freeze v71)
