@@ -24,8 +24,10 @@ vendor/ADNIMERGE2/build/
 *.swp
 *.swo
 
-# Claude Code / Serena (로컬 설정)
-.claude/
+# Claude Code / Serena (로컬 설정 — 개인 artifact만 무시. 공유되는 agent/skill은 트래킹)
+.claude/*
+!.claude/agents/
+!.claude/skills/
 .serena/
 docs/superpowers/
 

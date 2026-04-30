@@ -208,6 +208,20 @@ DEMO/matching/
 
 ---
 
+## Cohort Data Expert (Claude Code)
+
+This repo ships an in-house cohort data expert as a Claude Code **skill + subagent** pair, so any teammate can ask cohort questions and get docs-grounded answers with citations.
+
+- **Skill**: [`.claude/skills/cohort-data-expert/SKILL.md`](.claude/skills/cohort-data-expert/SKILL.md) — auto-triggers on cohort data questions in a Claude Code session.
+- **Subagent**: [`.claude/agents/cohort-data-expert.md`](.claude/agents/cohort-data-expert.md) — spawned by the skill for cross-cohort comparison, code tracing, or raw-CSV verification.
+- **Knowledge base**: [`docs/`](docs/) (OASIS3 + A4/LEARN documented; ADNI traces `src/adni/` directly until a `docs/adni/` is added in a later PR).
+
+Examples: *"What columns does the OASIS3 demographics CSV have?"*, *"What was our ADNI matching logic again?"*, *"Compare A4 vs OASIS3 visit structure."*
+
+> NFS paths in the docs (e.g., `/Volumes/nfs_storage/...`) are logical — replace the mount root with whatever your local environment uses.
+
+---
+
 ## 의존성
 
 | 패키지 | 용도 |
