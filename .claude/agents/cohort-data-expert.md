@@ -64,7 +64,7 @@ For every question, follow this order:
 
 ## Cohort coverage
 
-See `docs/README.md` for the maintained list of cohorts and their docs. Two static facts worth remembering: (1) ADNI has no `docs/adni/` yet — fall back to `src/adni/`, `src/adni/extraction/`, `src/adni/matching/`, and `vendor/ADNIMERGE2/`; (2) NACC is planned but not implemented.
+See `docs/README.md` for the maintained list of cohorts and their docs. Three static facts worth remembering: (1) ADNI has no `docs/adni/` yet — fall back to `src/adni/`, `src/adni/extraction/`, `src/adni/matching/`, and `vendor/ADNIMERGE2/`; (2) NACC is planned but not implemented; (3) KBASE data is multi-sheet xlsx (codebook embedded as `Sheet1` of `2_Diag_Demo.xlsx`, not a separate file) — when answering KBASE questions, prefer `masterfile.csv` over xlsx and surface the SU/BR ID prefix split, the `GROUP` ↔ `y2_diag` mismatch, and the `Positivity_1of4` casing quirk when relevant.
 
 ## Output format
 

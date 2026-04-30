@@ -6,6 +6,7 @@ ADNI_match repo의 코호트별 데이터 문서 인덱스. 각 코호트마다 
 > - ADNI: `/Volumes/nfs_storage/ADNI/...`
 > - A4/LEARN: `/Volumes/nfs_storage/A4/ORIG/...`
 > - OASIS3: `/Volumes/nfs_storage/OASIS3/ORIG/...`
+> - KBASE: `/Volumes/nfs_storage/KBASE/ORIG/Demo/`
 
 ---
 
@@ -50,6 +51,29 @@ WUSTL Knight ADRC의 1,378명 retrospective 통합 (30년+, MRI + PET + clinical
 
 ---
 
+### 🧠 KBASE — Korean Brain Aging Study
+
+SNUBH/SNU 기반 한국인 뇌 노화/치매 종단 코호트. 자체 한국어 CRF + 멀티모달 영상. 2014–2021 등록·추적, V0~V4 (V0/V2/V4가 imaging visit, V1/V3 임상 전용). NC 청장년/고령 + MCI + AD + 소수 atypical.
+
+→ **데이터 디렉터리**: [`docs/kbase/`](kbase/)
+
+| 문서 | 언제 읽나요? |
+|------|-------------|
+| [`kbase/README.md`](kbase/README.md) | KBASE 시작점 — visit schedule, ID 체계 (SU + BR), known quirks 요약 |
+| [`kbase/data_catalog.md`](kbase/data_catalog.md) | 7 xlsx + csv 파일 → 시트 → 컬럼 3-tier 인벤토리 |
+| [`kbase/protocol.md`](kbase/protocol.md) | 코호트 설계, 9 모달리티, 등록·추적 기간, ADNI/OASIS3/A4 비교 |
+| [`kbase/master_columns.md`](kbase/master_columns.md) | `masterfile.{xlsx,csv}` 150-col 사전 (source 그룹화) — 통합 분석 진입점 |
+| [`kbase/imaging_inventory.md`](kbase/imaging_inventory.md) | `1_KBASE1_nifti_0,2,4.xlsx` V0/V2/V4 시트 + 모달리티 가용성 인코딩 |
+| [`kbase/diagnosis_demographics.md`](kbase/diagnosis_demographics.md) | `2_Diag_Demo.xlsx` simplified + Sheet1 codebook + GROUP↔y2_diag 불일치 quirk |
+| [`kbase/codebook_dx.md`](kbase/codebook_dx.md) | `y2_diag` 5코드 + `y2_desc` 19코드 진단명 매핑 |
+| [`kbase/apoe.md`](kbase/apoe.md) | `3_APOE.xlsx` 인코딩 + cross-cohort APOE (KBASE/ADNI/OASIS3/A4) 비교 |
+| [`kbase/neuropsych_battery.md`](kbase/neuropsych_battery.md) | `4_NP.xlsx` 72-col 신경심리 (KBASE_NP1 + NP2, raw + Z) |
+| [`kbase/vascular_risk_factors.md`](kbase/vascular_risk_factors.md) | `5_VascularRF.xlsx` 50 cols + JSON-string 셀 quirk |
+| [`kbase/pib_positivity.md`](kbase/pib_positivity.md) | `추가_1_AB_PiB_positivity.xlsx` SUVR 1.40 cutoff + casing quirk |
+| [`kbase/join_relationships.md`](kbase/join_relationships.md) | `(ID, K_visit)` 단일 join 키, master concat layout |
+
+---
+
 ### 🧠 ADNI / ADNI 4
 
 ADNI는 src 모듈에 가까이 두는 패턴 (ADNIMERGE 빌드 + DICOM 매칭).
@@ -77,15 +101,28 @@ docs/
 │   ├── join_relationships.md
 │   ├── csv_profiles.md
 │   └── tau_suvr_sources.md
-└── oasis3/                            # OASIS3 문서 (8 files)
+├── oasis3/                            # OASIS3 문서 (8 files)
+│   ├── data_catalog.md
+│   ├── protocol.md
+│   ├── uds_forms.md
+│   ├── session_label_reference.md
+│   ├── demographics.md
+│   ├── pet_imaging.md
+│   ├── file_index.md
+│   └── join_relationships.md
+└── kbase/                             # KBASE 문서 (12 files)
+    ├── README.md
     ├── data_catalog.md
     ├── protocol.md
-    ├── uds_forms.md
-    ├── session_label_reference.md
-    ├── demographics.md
-    ├── pet_imaging.md
-    ├── file_index.md
-    └── join_relationships.md
+    ├── join_relationships.md
+    ├── master_columns.md
+    ├── imaging_inventory.md
+    ├── diagnosis_demographics.md
+    ├── codebook_dx.md
+    ├── apoe.md
+    ├── neuropsych_battery.md
+    ├── vascular_risk_factors.md
+    └── pib_positivity.md
 ```
 
 ---
