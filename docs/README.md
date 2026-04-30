@@ -22,6 +22,7 @@ A4는 RCT (solanezumab vs placebo, 무작위배정), LEARN은 amyloid-negative o
 
 | 문서 | 언제 읽나요? |
 |------|-------------|
+| [`a4/README.md`](a4/README.md) | A4/LEARN 시작점 — 한 눈에 보기, 문서 인덱스, known quirks (`src/a4/README.md` 와 역할 분리) |
 | [`a4/data_catalog.md`](a4/data_catalog.md) | NFS 원본 파일 카탈로그 (93 CSV + 20 PDF) — 소스 데이터 위치 찾을 때 |
 | [`a4/protocol.md`](a4/protocol.md) | 연구 프로토콜, 코호트 구조, 방문 체계 (V1~V9), 영상/바이오마커 — A4 데이터 구조 처음 접할 때 |
 | [`a4/baseline_csv.md`](a4/baseline_csv.md) | BASELINE.csv 컬럼 사전 (369열 상세, 알려진 제한사항) — cross-sectional 분석 시작점 |
@@ -41,6 +42,7 @@ WUSTL Knight ADRC의 1,378명 retrospective 통합 (30년+, MRI + PET + clinical
 
 | 문서 | 언제 읽나요? |
 |------|-------------|
+| [`oasis3/README.md`](oasis3/README.md) | OASIS3 시작점 — 한 눈에 보기, 문서 인덱스, known quirks (USDa3 typo, 음수 days 5건, c1=`psychometrics`) |
 | [`oasis3/data_catalog.md`](oasis3/data_catalog.md) | 24 CSV 마스터 인벤토리 — OASIS3 처음 접할 때 |
 | [`oasis3/protocol.md`](oasis3/protocol.md) | Knight ADRC 배경, OASIS 시리즈, UDS v2/v3, 모달리티 / PET 트레이서 — 연구 맥락 이해할 때 |
 | [`oasis3/uds_forms.md`](oasis3/uds_forms.md) | 17 NACC UDS 폼 (a1-d2) 컬럼 그룹별 요약 + 핵심 컬럼 정의 — 임상 데이터 분석 시 |
@@ -117,7 +119,8 @@ docs/
 ├── _shared/                           # NACC↔OASIS3 공통 (NACC UDS 표준)
 │   ├── nacc_uds_forms.md              #   17 UDS 폼 (A1–D2) 컬럼 정의
 │   └── nacc_session_labels.md         #   PACKET 그래머, missing-code 처리
-├── a4/                                # A4/LEARN 문서 (8 files)
+├── a4/                                # A4/LEARN 문서 (9 files)
+│   ├── README.md                      #   시작점 (한 눈에 보기, 인덱스, quirks)
 │   ├── data_catalog.md
 │   ├── protocol.md
 │   ├── baseline_csv.md
@@ -126,7 +129,8 @@ docs/
 │   ├── join_relationships.md
 │   ├── csv_profiles.md
 │   └── tau_suvr_sources.md
-├── oasis3/                            # OASIS3 문서 (8 files; UDS는 _shared 참조)
+├── oasis3/                            # OASIS3 문서 (9 files; UDS는 _shared 참조)
+│   ├── README.md                      #   시작점 (한 눈에 보기, 인덱스, quirks)
 │   ├── data_catalog.md
 │   ├── protocol.md
 │   ├── uds_forms.md                   #   OASIS3 overlay (file paths/row counts/USDa3 typo)

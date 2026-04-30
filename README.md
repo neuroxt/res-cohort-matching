@@ -176,7 +176,8 @@ DEMO/matching/
 ### A4/LEARN
 | 문서 | 내용 |
 |------|------|
-| [`src/a4/README.md`](src/a4/README.md) | **시작 가이드** — CSV 선택, 참고 문서, BASELINE 상세, ADNI 차이점 |
+| [`src/a4/README.md`](src/a4/README.md) | **시작 가이드** — CSV 선택, 파이프라인 사용법, BASELINE 상세, ADNI 차이점 |
+| [`docs/a4/README.md`](docs/a4/README.md) | docs 시작점 — 한 눈에 보기, 코호트 비교, known quirks |
 | [`docs/a4/baseline_csv.md`](docs/a4/baseline_csv.md) | BASELINE.csv 컬럼 사전 (369열 상세, 알려진 제한사항) |
 | [`docs/a4/protocol.md`](docs/a4/protocol.md) | 연구 프로토콜, 코호트 구조, 방문 체계, 영상/바이오마커 |
 | [`docs/a4/column_dictionary.md`](docs/a4/column_dictionary.md) | MERGED.csv 출력 컬럼 사전 |
@@ -187,6 +188,7 @@ DEMO/matching/
 ### OASIS3
 | 문서 | 내용 |
 |------|------|
+| [`docs/oasis3/README.md`](docs/oasis3/README.md) | OASIS3 시작점 — 한 눈에 보기, 코호트 비교, known quirks |
 | [`docs/oasis3/data_catalog.md`](docs/oasis3/data_catalog.md) | 24 CSV 마스터 인벤토리 |
 | [`docs/oasis3/protocol.md`](docs/oasis3/protocol.md) | Knight ADRC, OASIS 시리즈, NACC UDS v2/v3, 모달리티/트레이서 |
 | [`docs/oasis3/uds_forms.md`](docs/oasis3/uds_forms.md) | OASIS3 overlay (file paths, row counts, USDa3 typo) — 폼 정의는 `docs/_shared/nacc_uds_forms.md` |
