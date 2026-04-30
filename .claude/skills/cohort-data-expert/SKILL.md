@@ -42,15 +42,7 @@ Inline workflow:
 
 How to invoke:
 
-```
-Agent({
-  subagent_type: "cohort-data-expert",
-  description: "<short label, e.g. OASIS3 demographics deep-dive>",
-  prompt: "<verbatim user question + which cohorts are in scope + desired output shape (bullets, table, comparison) + any constraints>"
-})
-```
-
-When you spawn the subagent, brief it like a colleague who hasn't seen this conversation: include the exact question, the relevant cohort(s), and what shape of answer the user wants.
+Spawn the `cohort-data-expert` subagent via the Agent tool. Brief it like a colleague who hasn't seen this conversation — include the verbatim user question, which cohort(s) are in scope, and the desired output shape (bullets, comparison table, file path list, etc.). The subagent owns its own context window, citation discipline, and ADNI fallback logic, so do not pre-summarize cohort docs in the prompt; just hand off the question and let it work.
 
 ## Output rules (apply whether answering inline or summarizing the subagent's result)
 
