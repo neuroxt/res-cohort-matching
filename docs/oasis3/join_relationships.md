@@ -171,7 +171,7 @@ merged = centiloid.merge(
 # merged['PATH'] 가 NIfTI 경로 (Windows 매핑 → macOS 경로 변환 필요)
 ```
 
-> **주의**: `oasis_file_list.csv`의 VISIT(폴더 day)와 centiloid의 session day가 정확히 일치하지 않을 수 있다 (폴더 grouping 규칙 다름). Mismatch 시 파일명에서 day 추출 fallback. 자세한 내용은 [`OASIS3_file_index.md`](OASIS3_file_index.md).
+> **주의**: `oasis_file_list.csv`의 VISIT(폴더 day)와 centiloid의 session day가 정확히 일치하지 않을 수 있다 (폴더 grouping 규칙 다름). Mismatch 시 파일명에서 day 추출 fallback. 자세한 내용은 [`file_index.md`](file_index.md).
 
 ---
 
@@ -282,7 +282,7 @@ meds = a4d_long.merge(a4g_long[['OASISID', 'days_to_visit', 'slot_num', 'name']]
 *_diff = refdate − scan_date
 ```
 
-음수 = 영상이 임상 ref보다 *이후* 촬영. 자세한 내용은 [`OASIS3_file_index.md`](OASIS3_file_index.md).
+음수 = 영상이 임상 ref보다 *이후* 촬영. 자세한 내용은 [`file_index.md`](file_index.md).
 
 ### Centiloid는 amyloid 전용
 
@@ -293,7 +293,7 @@ meds = a4d_long.merge(a4g_long[['OASISID', 'days_to_visit', 'slot_num', 'name']]
 
 - C1 cognitive battery의 session label은 `OAS30001_psychometrics_d0339` 형식.
 - 다른 UDS 폼이 `UDSx{숫자}` 토큰을 쓰는 것과 다름. 정규식 매칭 시 주의.
-- 자세한 내용은 [`OASIS3_session_label_reference.md`](OASIS3_session_label_reference.md).
+- 자세한 내용은 [`session_label_reference.md`](session_label_reference.md).
 
 ### 데이터 입력 오류 5건
 
@@ -313,7 +313,7 @@ df = pd.read_csv(file, dtype=KEY_DTYPE)
 df['days_to_visit'] = pd.to_numeric(df['days_to_visit'], errors='coerce').astype('Int64')
 ```
 
-자세한 내용은 [`OASIS3_session_label_reference.md`](OASIS3_session_label_reference.md).
+자세한 내용은 [`session_label_reference.md`](session_label_reference.md).
 
 ---
 
@@ -321,9 +321,9 @@ df['days_to_visit'] = pd.to_numeric(df['days_to_visit'], errors='coerce').astype
 
 | 문서 | 내용 |
 |------|------|
-| [`OASIS3_data_catalog.md`](OASIS3_data_catalog.md) | 24 CSV 마스터 인벤토리 |
-| [`OASIS3_session_label_reference.md`](OASIS3_session_label_reference.md) | session label grammar (FORM 토큰 변종 포함) |
-| [`OASIS3_uds_forms.md`](OASIS3_uds_forms.md) | 폼별 컬럼 그룹 + 핵심 컬럼 정의 |
-| [`OASIS3_demographics.md`](OASIS3_demographics.md) | demographics 컬럼 사전 |
-| [`OASIS3_pet_imaging.md`](OASIS3_pet_imaging.md) | PET 트레이서, Centiloid |
-| [`OASIS3_file_index.md`](OASIS3_file_index.md) | NIfTI inventory, BIDS 명명 |
+| [`data_catalog.md`](data_catalog.md) | 24 CSV 마스터 인벤토리 |
+| [`session_label_reference.md`](session_label_reference.md) | session label grammar (FORM 토큰 변종 포함) |
+| [`uds_forms.md`](uds_forms.md) | 폼별 컬럼 그룹 + 핵심 컬럼 정의 |
+| [`demographics.md`](demographics.md) | demographics 컬럼 사전 |
+| [`pet_imaging.md`](pet_imaging.md) | PET 트레이서, Centiloid |
+| [`file_index.md`](file_index.md) | NIfTI inventory, BIDS 명명 |

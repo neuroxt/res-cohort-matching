@@ -122,7 +122,7 @@ OAS30001_USDa3_d0000      │  (subject 1의 첫 방문)
 OAS30001_psychometrics_d0000 ┘
 ```
 
-> b3(UPDRS)와 a3(family history)는 optional module이므로 같은 visit에 항상 존재하지 않는다. 자세한 내용은 [`OASIS3_uds_forms.md`](OASIS3_uds_forms.md).
+> b3(UPDRS)와 a3(family history)는 optional module이므로 같은 visit에 항상 존재하지 않는다. 자세한 내용은 [`uds_forms.md`](uds_forms.md).
 
 ---
 
@@ -160,7 +160,7 @@ OAS30001   339      NA   NA         NA    NA         NA    NA        423    -84
 | 양수 (+N) | 영상이 임상 ref보다 N일 *이전* |
 | 음수 (−N) | 영상이 임상 ref보다 N일 *이후* |
 
-자세한 분석 가이드는 [`OASIS3_file_index.md`](OASIS3_file_index.md).
+자세한 분석 가이드는 [`file_index.md`](file_index.md).
 
 ### PET session label vs UDS session label
 
@@ -236,5 +236,5 @@ FORM_TOKEN_TO_FILE = {
 - A3, B3는 optional module → 행 수 4,090. 같은 visit에서 누락될 수 있음.
 - C1는 v2(`UDSc1` 미사용) → v3(`psychometrics` 토큰)로 명명 변경됨. UDS v3 명명 컨벤션에서 C1 폼이 "Neuropsychological Battery"이므로 OASIS3 처리 시 `psychometrics`로 통합한 것으로 보임.
 - 데이터 입력 오류 (음수 days_to_visit, 음수 age) 5건 존재 — 분석 전 검증 권장.
-- 자세한 폼별 컬럼 정의: [`OASIS3_uds_forms.md`](OASIS3_uds_forms.md)
-- 영상 파일 매칭 규칙: [`OASIS3_file_index.md`](OASIS3_file_index.md)
+- 자세한 폼별 컬럼 정의: [`uds_forms.md`](uds_forms.md)
+- 영상 파일 매칭 규칙: [`file_index.md`](file_index.md)

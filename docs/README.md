@@ -1,0 +1,111 @@
+# 데이터 카탈로그 / 컬럼 사전 인덱스
+
+ADNI_match repo의 코호트별 데이터 문서 인덱스. 각 코호트마다 NFS 원본 파일 카탈로그, 프로토콜 배경, 컬럼 사전, 조인 관계, 그 외 분석 가이드를 모아두었다.
+
+> **NFS 기준 경로**:
+> - ADNI: `/Volumes/nfs_storage/ADNI/...`
+> - A4/LEARN: `/Volumes/nfs_storage/A4/ORIG/...`
+> - OASIS3: `/Volumes/nfs_storage/OASIS3/ORIG/...`
+
+---
+
+## 코호트별 문서
+
+### 🧠 A4 / LEARN — Anti-Amyloid Treatment in Asymptomatic AD
+
+A4는 RCT (solanezumab vs placebo, 무작위배정), LEARN은 amyloid-negative observational. 둘 다 PRV2 릴리스(11Aug2025) 기반.
+
+→ **시작 가이드**: [`src/a4/README.md`](../src/a4/README.md)
+→ **데이터 디렉터리**: [`docs/a4/`](a4/)
+
+| 문서 | 언제 읽나요? |
+|------|-------------|
+| [`a4/data_catalog.md`](a4/data_catalog.md) | NFS 원본 파일 카탈로그 (93 CSV + 20 PDF) — 소스 데이터 위치 찾을 때 |
+| [`a4/protocol.md`](a4/protocol.md) | 연구 프로토콜, 코호트 구조, 방문 체계 (V1~V9), 영상/바이오마커 — A4 데이터 구조 처음 접할 때 |
+| [`a4/baseline_csv.md`](a4/baseline_csv.md) | BASELINE.csv 컬럼 사전 (369열 상세, 알려진 제한사항) — cross-sectional 분석 시작점 |
+| [`a4/column_dictionary.md`](a4/column_dictionary.md) | MERGED.csv 출력 컬럼 사전 (~400개) — 특정 컬럼 의미 찾을 때 |
+| [`a4/viscode_reference.md`](a4/viscode_reference.md) | VISCODE ↔ SESSION_CODE 매핑 (152개) — SESSION_CODE가 어떤 방문인지 알고 싶을 때 |
+| [`a4/join_relationships.md`](a4/join_relationships.md) | 파일 간 조인 키, 관계도 — 파이프라인 로직 이해할 때 |
+| [`a4/csv_profiles.md`](a4/csv_profiles.md) | 컬럼 프로파일 (타입, null률, 값 범위) — 데이터 품질 확인할 때 |
+| [`a4/tau_suvr_sources.md`](a4/tau_suvr_sources.md) | Tau PET SUVR 3-pipeline 비교 (Stanford / Avid-Clark / PetSurfer) — Tau 분석 소스 선택 시 |
+
+---
+
+### 🧠 OASIS3 — Open Access Series of Imaging Studies, Release 3
+
+WUSTL Knight ADRC의 1,378명 retrospective 통합 (30년+, MRI + PET + clinical/cognitive). 임상 데이터는 NACC UDS 폼 형식.
+
+→ **데이터 디렉터리**: [`docs/oasis3/`](oasis3/)
+
+| 문서 | 언제 읽나요? |
+|------|-------------|
+| [`oasis3/data_catalog.md`](oasis3/data_catalog.md) | 24 CSV 마스터 인벤토리 — OASIS3 처음 접할 때 |
+| [`oasis3/protocol.md`](oasis3/protocol.md) | Knight ADRC 배경, OASIS 시리즈, UDS v2/v3, 모달리티 / PET 트레이서 — 연구 맥락 이해할 때 |
+| [`oasis3/uds_forms.md`](oasis3/uds_forms.md) | 17 NACC UDS 폼 (a1-d2) 컬럼 그룹별 요약 + 핵심 컬럼 정의 — 임상 데이터 분석 시 |
+| [`oasis3/session_label_reference.md`](oasis3/session_label_reference.md) | session label grammar, FORM 토큰 (USDa3 typo, psychometrics 토큰), days_to_visit 의미 — 라벨 파싱 / 조인 키 만들 때 |
+| [`oasis3/demographics.md`](oasis3/demographics.md) | OASIS3_demographics.csv 19컬럼 1:1 사전 — Subject-level baseline 정보 |
+| [`oasis3/pet_imaging.md`](oasis3/pet_imaging.md) | PET 3 파일 비교, 트레이서 (PIB/AV45/AV1451/FDG), Centiloid + PUP 방법론 — 아밀로이드/타우 정량 분석 시 |
+| [`oasis3/file_index.md`](oasis3/file_index.md) | NIfTI 파일 인벤토리, BIDS 명명, `*_diff` 부호 — 영상-임상 매칭 시 |
+| [`oasis3/join_relationships.md`](oasis3/join_relationships.md) | 3-tier 키 계층, 조인 패턴 4종, 카디널리티 — 파이프라인 설계 시 |
+
+---
+
+### 🧠 ADNI / ADNI 4
+
+ADNI는 src 모듈에 가까이 두는 패턴 (ADNIMERGE 빌드 + DICOM 매칭).
+
+| 문서 | 내용 |
+|------|------|
+| [`src/adni/README.md`](../src/adni/README.md) | 데이터 흐름, 12단계 빌드, 매칭 로직, 검증 결과 |
+| [`src/adni/extraction/README.md`](../src/adni/extraction/README.md) | ADNIMERGE 빌드 상세, 레퍼런스 대비 재현성 검증 |
+
+> ADNI 전용 `docs/adni/` 폴더는 아직 없음. 향후 확장 시 같은 패턴으로 추가.
+
+---
+
+## 폴더 구조
+
+```
+docs/
+├── README.md                          # ← 이 파일 (코호트 인덱스)
+├── a4/                                # A4/LEARN 문서 (8 files)
+│   ├── data_catalog.md
+│   ├── protocol.md
+│   ├── baseline_csv.md
+│   ├── column_dictionary.md
+│   ├── viscode_reference.md
+│   ├── join_relationships.md
+│   ├── csv_profiles.md
+│   └── tau_suvr_sources.md
+└── oasis3/                            # OASIS3 문서 (8 files)
+    ├── data_catalog.md
+    ├── protocol.md
+    ├── uds_forms.md
+    ├── session_label_reference.md
+    ├── demographics.md
+    ├── pet_imaging.md
+    ├── file_index.md
+    └── join_relationships.md
+```
+
+---
+
+## 문서 작성 컨벤션
+
+새 코호트 문서를 추가할 때 A4/OASIS3 패턴을 따른다:
+
+| 표준 문서 | 역할 | 모방 reference |
+|-----------|------|----------------|
+| `data_catalog.md` | NFS 원본 파일 마스터 인벤토리 (파일/크기/행/컬럼/한 줄 설명) | A4/OASIS3 둘 다 |
+| `protocol.md` | 연구 배경, 코호트 구조, 방문/세션 체계, 모달리티 | A4/OASIS3 둘 다 |
+| `column_dictionary.md` 또는 `*_csv.md` | 출력 CSV의 컬럼 사전 | A4 (BASELINE/MERGED) |
+| `*_reference.md` | VISCODE/session label 컨벤션 | A4 (viscode), OASIS3 (session_label) |
+| `join_relationships.md` | 파일 간 키와 카디널리티 + 조인 패턴 | A4/OASIS3 둘 다 |
+
+스타일:
+- 한국어 본문 + 영어 기술 용어 (변수명, CRF명, 코드값은 영어 그대로)
+- 표 헤더로 시작, 코딩 값은 실측으로 검증
+- DOI / 저널 / 외부 PDF는 inline link로 인용
+- "알려진 한계 (Known limitations)" 섹션을 두어 데이터 quirk 명시
+
+> 작성 후 row/column 수 같은 사실은 실제 CSV로 spot-check 후 commit.

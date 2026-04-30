@@ -251,7 +251,7 @@ merged = centiloid.merge(
 
 | 문서 | 내용 |
 |------|------|
-| [`OASIS3_data_catalog.md`](OASIS3_data_catalog.md) | 24 CSV 마스터 인벤토리 |
-| [`OASIS3_session_label_reference.md`](OASIS3_session_label_reference.md) | session label grammar, days_to_visit 의미 |
-| [`OASIS3_pet_imaging.md`](OASIS3_pet_imaging.md) | PET 트레이서, Centiloid, PUP 파이프라인 |
-| [`OASIS3_join_relationships.md`](OASIS3_join_relationships.md) | 전체 조인 패턴 |
+| [`data_catalog.md`](data_catalog.md) | 24 CSV 마스터 인벤토리 |
+| [`session_label_reference.md`](session_label_reference.md) | session label grammar, days_to_visit 의미 |
+| [`pet_imaging.md`](pet_imaging.md) | PET 트레이서, Centiloid, PUP 파이프라인 |
+| [`join_relationships.md`](join_relationships.md) | 전체 조인 패턴 |

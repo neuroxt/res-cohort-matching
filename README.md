@@ -175,12 +175,24 @@ DEMO/matching/
 | 문서 | 내용 |
 |------|------|
 | [`src/a4/README.md`](src/a4/README.md) | **시작 가이드** — CSV 선택, 참고 문서, BASELINE 상세, ADNI 차이점 |
-| [`docs/A4_baseline_csv.md`](docs/A4_baseline_csv.md) | BASELINE.csv 컬럼 사전 (369열 상세, 알려진 제한사항) |
-| [`docs/A4_protocol.md`](docs/A4_protocol.md) | 연구 프로토콜, 코호트 구조, 방문 체계, 영상/바이오마커 |
-| [`docs/A4_column_dictionary.md`](docs/A4_column_dictionary.md) | MERGED.csv 출력 컬럼 사전 |
-| [`docs/A4_data_catalog.md`](docs/A4_data_catalog.md) | NFS 원본 파일 카탈로그 |
-| [`docs/A4_viscode_reference.md`](docs/A4_viscode_reference.md) | VISCODE <-> SESSION_CODE 매핑 |
-| [`docs/A4_join_relationships.md`](docs/A4_join_relationships.md) | 파일 간 조인 키, 관계도 |
+| [`docs/a4/baseline_csv.md`](docs/a4/baseline_csv.md) | BASELINE.csv 컬럼 사전 (369열 상세, 알려진 제한사항) |
+| [`docs/a4/protocol.md`](docs/a4/protocol.md) | 연구 프로토콜, 코호트 구조, 방문 체계, 영상/바이오마커 |
+| [`docs/a4/column_dictionary.md`](docs/a4/column_dictionary.md) | MERGED.csv 출력 컬럼 사전 |
+| [`docs/a4/data_catalog.md`](docs/a4/data_catalog.md) | NFS 원본 파일 카탈로그 |
+| [`docs/a4/viscode_reference.md`](docs/a4/viscode_reference.md) | VISCODE <-> SESSION_CODE 매핑 |
+| [`docs/a4/join_relationships.md`](docs/a4/join_relationships.md) | 파일 간 조인 키, 관계도 |
+
+### OASIS3
+| 문서 | 내용 |
+|------|------|
+| [`docs/oasis3/data_catalog.md`](docs/oasis3/data_catalog.md) | 24 CSV 마스터 인벤토리 |
+| [`docs/oasis3/protocol.md`](docs/oasis3/protocol.md) | Knight ADRC, OASIS 시리즈, NACC UDS v2/v3, 모달리티/트레이서 |
+| [`docs/oasis3/uds_forms.md`](docs/oasis3/uds_forms.md) | 17 UDS 폼 컬럼 그룹별 요약 + 핵심 컬럼 정의 |
+| [`docs/oasis3/session_label_reference.md`](docs/oasis3/session_label_reference.md) | session label grammar, FORM 토큰, days_to_visit 의미 |
+| [`docs/oasis3/demographics.md`](docs/oasis3/demographics.md) | OASIS3_demographics.csv 19컬럼 1:1 사전 |
+| [`docs/oasis3/pet_imaging.md`](docs/oasis3/pet_imaging.md) | PET 3 파일, 트레이서, Centiloid + PUP |
+| [`docs/oasis3/file_index.md`](docs/oasis3/file_index.md) | NIfTI 인벤토리 + 세션 매칭 |
+| [`docs/oasis3/join_relationships.md`](docs/oasis3/join_relationships.md) | 키 계층, 조인 패턴, 카디널리티 |
 
 ---
 

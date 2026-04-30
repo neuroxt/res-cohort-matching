@@ -195,7 +195,7 @@ diff = (merged['age_b4'] - merged['AgeatEntry']).abs()
 
 | 문서 | 내용 |
 |------|------|
-| [`OASIS3_data_catalog.md`](OASIS3_data_catalog.md) | 24 CSV 마스터 인벤토리 |
-| [`OASIS3_protocol.md`](OASIS3_protocol.md) | 코호트 구조, 진단 그룹, de-identification |
-| [`OASIS3_uds_forms.md`](OASIS3_uds_forms.md) | UDS A1(longitudinal demographics 변경) 컬럼 |
-| [`OASIS3_join_relationships.md`](OASIS3_join_relationships.md) | demographics → UDS / PET 조인 패턴 |
+| [`data_catalog.md`](data_catalog.md) | 24 CSV 마스터 인벤토리 |
+| [`protocol.md`](protocol.md) | 코호트 구조, 진단 그룹, de-identification |
+| [`uds_forms.md`](uds_forms.md) | UDS A1(longitudinal demographics 변경) 컬럼 |
+| [`join_relationships.md`](join_relationships.md) | demographics → UDS / PET 조인 패턴 |

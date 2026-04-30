@@ -162,6 +162,6 @@ FreeSurfer atlas 기반 273개 ROI. 예:
 
 | 문서 | 내용 |
 |------|------|
-| [`docs/A4_protocol.md`](A4_protocol.md) | V1~V9 방문 체계, 영상 프로토콜, 바이오마커 수집 시점 |
-| [`docs/A4_column_dictionary.md`](A4_column_dictionary.md) | MERGED.csv 전체 컬럼 사전 (BASELINE.csv 컬럼도 포함) |
-| [`docs/A4_viscode_reference.md`](A4_viscode_reference.md) | VISCODE <-> SESSION_CODE 매핑 |
+| [`protocol.md`](protocol.md) | V1~V9 방문 체계, 영상 프로토콜, 바이오마커 수집 시점 |
+| [`column_dictionary.md`](column_dictionary.md) | MERGED.csv 전체 컬럼 사전 (BASELINE.csv 컬럼도 포함) |
+| [`viscode_reference.md`](viscode_reference.md) | VISCODE <-> SESSION_CODE 매핑 |
