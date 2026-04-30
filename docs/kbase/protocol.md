@@ -113,7 +113,7 @@ PROC/
 └── TAU_PET/
 ```
 
-**PET 처리 코드**: `Demo/PET_Processing_Code/pet_preprocessing_surf.m` (74 KB MATLAB) + 3개 Python orchestration script (`make_run.py`, `make_bash_run.py`, `make_final_script.py`). surface-based PET preprocessing 추정.
+**PET 처리 코드**: `Demo/PET_Processing_Code/`에 3개 Python orchestration script (`make_run.py`, `make_bash_run.py`, `make_final_script.py`)만 남아 있음.
 
 > 처리 출력 디렉토리 내부 구조는 이 문서 작성 시점에 미조사. 분석 시작 전에 실제 디렉토리 inspection 권장.
 

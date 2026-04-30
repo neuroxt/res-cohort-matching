@@ -30,8 +30,7 @@
 │   │   │   ├── T1/       (1,198 json)
 │   │   │   ├── T2_FLAIR/ (1,219 json)
 │   │   │   └── TAU/      (  275 json)        ← 후기 도입
-│   │   └── PET_Processing_Code/             ← MATLAB + Python preprocessing
-│   │       ├── pet_preprocessing_surf.m    (74K, 메인)
+│   │   └── PET_Processing_Code/             ← Python orchestration only
 │   │       ├── make_run.py                 (orchestration)
 │   │       ├── make_bash_run.py
 │   │       └── make_final_script.py
