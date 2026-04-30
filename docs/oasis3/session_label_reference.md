@@ -1,8 +1,10 @@
-# OASIS3 Session Label & days_to_visit 참조
+# OASIS3 Session Label & days_to_visit overlay (OASIS3-specific)
 
-OASIS3는 ADNI/A4와 달리 **고정 visit code (V1, V2, ...) 가 없다**. 모든 임상/영상 시점은 `(OASISID, days_to_visit)` 페어로 표현되며, 이를 표현하는 단일 텍스트 키가 **OASIS_session_label**이다.
+OASIS3 임상 데이터는 NACC UDS visit/packet 표준을 따른다. PACKET 코드, NACCVNUM 의미, missing-code 처리, 영상-임상 시간 매칭 등 표준 운영 패턴은 [`docs/_shared/nacc_session_labels.md`](../_shared/nacc_session_labels.md) 에서 다룬다.
 
-이 문서는 session label의 grammar, FORM 토큰 표(파일명과 토큰의 미묘한 차이 포함), `days_to_visit`의 의미와 주의사항을 정리한다.
+본 overlay 는 OASIS3 가 표준 위에 얹는 cohort-specific 사실 — 단일 텍스트 session label 형식, `days_to_visit` 컬럼 의미와 quirk, OASIS3 만의 form 토큰 (USDa3/USDb3 typo, c1 = `psychometrics`), 영상↔임상 매칭 — 을 정리한다.
+
+> OASIS3는 ADNI/A4/NACC 와 달리 **고정 visit code (V1, V2, ...) 가 없다**. 모든 임상/영상 시점은 `(OASISID, days_to_visit)` 페어로 표현되며, 이를 표현하는 단일 텍스트 키가 **OASIS_session_label**이다.
 
 ---
 
@@ -24,7 +26,7 @@ OAS3{0001-1378}_{FORM_TOKEN}_d{####}
 예:
 - `OAS30001_UDSb4_d0339` — subject 1, B4(CDR) form, day 339
 - `OAS30001_AV45_d2430` — subject 1, AV45 amyloid PET scan, day 2430
-- `OAS30290_UDSb4_d-0002` — 음수 days (희귀, 5건만 존재 — 아래 참고)
+- `OAS30290_UDSb4_d-0002` — 음수 days (희귀, 5건만 존재 — 아래 §3 참고)
 
 ---
 
@@ -36,9 +38,9 @@ OAS3{0001-1378}_{FORM_TOKEN}_d{####}
 |------|-------------|------------------------|------|
 | `OASIS3_UDSa1_participant_demo.csv` | a1 | `UDSa1` | 일치 |
 | `OASIS3_UDSa2_cs_demo.csv` | a2 | `UDSa2` | 일치 |
-| `OASIS3_UDSa3.csv` | a3 | **`USDa3`** | **`USD` typo (UDS의 글자 순서가 뒤바뀜)** |
-| `OASIS3_UDSa4D_med_codes.csv` | a4D | **`UDSa4`** | **D suffix 없음** (a4G와 동일 토큰) |
-| `OASIS3_UDSa4G_med_names.csv` | a4G | **`UDSa4`** | **G suffix 없음** (a4D와 동일 토큰) |
+| `OASIS3_UDSa3.csv` | a3 | **`USDa3`** | **`USD` typo** |
+| `OASIS3_UDSa4D_med_codes.csv` | a4D | **`UDSa4`** | D suffix 없음 (a4G와 동일 토큰) |
+| `OASIS3_UDSa4G_med_names.csv` | a4G | **`UDSa4`** | G suffix 없음 (a4D와 동일 토큰) |
 | `OASIS3_UDSa5_health_history.csv` | a5 | `UDSa5` | 일치 |
 | `OASIS3_UDSb1_physical_eval.csv` | b1 | `UDSb1` | 일치 |
 | `OASIS3_UDSb2_his_cvd.csv` | b2 | `UDSb2` | 일치 |
@@ -90,7 +92,7 @@ df['days_to_visit'] = pd.to_numeric(df['days_to_visit'], errors='coerce').astype
 | days_to_visit | 행 수 | 비고 |
 |---------------|-------|------|
 | 0 (`d0000`) | 1,355 | 첫 visit |
-| > 0 | 7,266 | 추적 visit (음수 변환 안 됨) |
+| > 0 | 7,266 | 추적 visit |
 | < 0 | **5** | 데이터 이상치 (아래 참고) |
 
 ### 음수 days_to_visit (이상치)
@@ -236,5 +238,14 @@ FORM_TOKEN_TO_FILE = {
 - A3, B3는 optional module → 행 수 4,090. 같은 visit에서 누락될 수 있음.
 - C1는 v2(`UDSc1` 미사용) → v3(`psychometrics` 토큰)로 명명 변경됨. UDS v3 명명 컨벤션에서 C1 폼이 "Neuropsychological Battery"이므로 OASIS3 처리 시 `psychometrics`로 통합한 것으로 보임.
 - 데이터 입력 오류 (음수 days_to_visit, 음수 age) 5건 존재 — 분석 전 검증 권장.
-- 자세한 폼별 컬럼 정의: [`uds_forms.md`](uds_forms.md)
-- 영상 파일 매칭 규칙: [`file_index.md`](file_index.md)
+
+---
+
+## 8. 참고 문서
+
+| 문서 | 내용 |
+|------|------|
+| [`docs/_shared/nacc_session_labels.md`](../_shared/nacc_session_labels.md) | NACC UDS visit/packet 표준 (PACKET=I/F/T, missing-code, 영상-임상 시간 매칭) |
+| [`docs/_shared/nacc_uds_forms.md`](../_shared/nacc_uds_forms.md) | NACC UDS 17 폼 컬럼 정의 / 코딩 |
+| [`uds_forms.md`](uds_forms.md) | OASIS3 폼별 파일명 / 행 수 / OASIS3 session token 표 |
+| [`file_index.md`](file_index.md) | OASIS3 NIfTI 파일 인덱스, BIDS 명명, `*_diff` 부호 |

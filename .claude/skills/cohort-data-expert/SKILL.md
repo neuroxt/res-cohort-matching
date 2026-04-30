@@ -1,6 +1,6 @@
 ---
 name: cohort-data-expert
-description: Use when the user asks about NeuroXT cohort data — ADNI / OASIS3 / A4 / LEARN file layouts, CSV columns, join keys, demographics encodings, matching/extraction logic, or which file lives where on NFS. Grounded in res-cohort-matching/docs/. Triggers include "OASIS3 데이터", "ADNI 매칭 로직", "A4 BASELINE.csv", "코호트 컬럼 / CSV / 파일", "어디에 어떤 csv가", "이 매칭 어떻게 했지", "what CSVs", "demographics columns", "join keys", "cohort file", and similar.
+description: Use when the user asks about NeuroXT cohort data — ADNI / OASIS3 / A4 / LEARN / NACC / KBASE file layouts, CSV columns, join keys, demographics encodings, matching/extraction logic, or which file lives where on NFS. Grounded in res-cohort-matching/docs/. Triggers include "OASIS3 데이터", "ADNI 매칭 로직", "A4 BASELINE.csv", "NACC merged.csv", "NACCID", "UDS v3 / v4", "KBASE masterfile", "코호트 컬럼 / CSV / 파일", "어디에 어떤 csv가", "이 매칭 어떻게 했지", "what CSVs", "demographics columns", "join keys", "cohort file", "investigator vs commercial", and similar.
 ---
 
 # Cohort Data Expert
@@ -15,6 +15,8 @@ Activate as soon as the user asks anything about cohort data:
 - "OASIS3 demographics CSV에 어떤 컬럼 있어? race 인코딩도."
 - "A4 BASELINE.csv 369컬럼 중 imaging 관련은?"
 - "예전 ADNI 매칭 로직 어떻게 돌렸지?"
+- "NACC merged.csv 390컬럼 어떻게 구성됐어?"
+- "NACC commercial vs investigator 차이?"
 - "Compare A4 vs OASIS3 visit structure."
 - "어떤 파일이 NFS의 어디에 있는지 정리해줘."
 
@@ -36,6 +38,7 @@ Inline workflow:
 - **Cross-cohort comparison** — "compare ADNI vs OASIS3 demographics", "which cohorts have Tau PET?".
 - **Matching / extraction logic code tracing** — "how did we match DICOMs?", "what's the BASELINE.csv build pipeline?".
 - **ADNI questions** — there are no `docs/adni/` files; the agent has to trace `src/adni/` and `vendor/ADNIMERGE2/` directly. The subagent has the right tools and discipline for this.
+- **NACC `merged.csv` 깊이 탐색** — 390-col 사전 + Commercial vs Investigator tier + UDS 폼 통합. `docs/nacc/merged_csv.md` + `docs/nacc/data_tier_reference.md` + `docs/_shared/nacc_uds_forms.md` 동시 참조 필요.
 - **Verification against a raw CSV/PDF** is needed (the subagent will ask the user permission before reading raw data).
 - **5+ files** would need to be read to answer well.
 - **Repeat / batch** — multiple related questions in one go.
@@ -59,7 +62,9 @@ Spawn the `cohort-data-expert` subagent via the Agent tool. Brief it like a coll
 
 ## Quick map (defer to `docs/README.md` for the maintained list)
 
-- **OASIS3** — `docs/oasis3/` (8 docs)
+- **OASIS3** — `docs/oasis3/` (8 docs; UDS form definitions in `docs/_shared/nacc_uds_forms.md`)
 - **A4 / LEARN** — `docs/a4/` (8 docs)
+- **NACC** — `docs/nacc/` (10 docs); `merged.csv` is NeuroXT-built (390 cols); UDS form definitions in `docs/_shared/nacc_uds_forms.md`; Commercial vs Investigator consent tier
+- **KBASE** — `docs/kbase/` (12 docs); 자체 한국어 CRF; `masterfile.csv` 150-col 통합
 - **ADNI / ADNI 4** — no `docs/adni/` yet; trace `src/adni/`, `src/adni/extraction/`, `src/adni/matching/`, `vendor/ADNIMERGE2/`
-- **NACC** — planned, not implemented
+- **`docs/_shared/`** — NACC UDS 표준 (NACC↔OASIS3 공통): `nacc_uds_forms.md` (17 폼 컬럼 정의), `nacc_session_labels.md` (PACKET 그래머)
