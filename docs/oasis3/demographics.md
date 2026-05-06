@@ -14,7 +14,7 @@
 
 | 컬럼 | 설명 | Fill | 값 / 범위 |
 |------|------|------|-----------|
-| OASISID | 피험자 ID (unique) | 100% | `OAS30001` ~ `OAS31378` 패턴 |
+| OASISID | 피험자 ID (unique) | 100% | `OAS30001` ~ `OAS31379` 패턴 (2025-12 Tau 통합 후 +1; 원본 release 1,378까지) |
 | Subject_accession | 외부 accession 식별자 | **0%** (전부 빈 값) | 사용되지 않음 (legacy 컬럼) |
 
 ### 연령 (2 컬럼)

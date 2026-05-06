@@ -11,12 +11,12 @@ OASIS3 임상 데이터는 NACC UDS visit/packet 표준을 따른다. PACKET 코
 ## 1. Session Label Grammar
 
 ```
-OAS3{0001-1378}_{FORM_TOKEN}_d{####}
+OAS3{0001-1379}_{FORM_TOKEN}_d{####}
 ```
 
 | 위치 | 값 | 예시 |
 |------|-----|------|
-| Subject | `OAS3` + 4자리 ID (1-padded, 1378까지) | `OAS30001`, `OAS31378` |
+| Subject | `OAS3` + 4자리 ID (1-padded, 1379까지 — 2025-12 Tau 통합 후 +1; 원본 release는 1378까지) | `OAS30001`, `OAS31379` |
 | 구분자 | `_` | |
 | FORM_TOKEN | 폼 종류 | `UDSb4`, `USDa3`, `psychometrics`, `AV45`, `PIB` |
 | 구분자 | `_` | |

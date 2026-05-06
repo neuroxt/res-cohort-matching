@@ -84,7 +84,7 @@ UDS v3에서 a4 폼이 D(코드) + G(이름) 둘로 분할됐지만 OASIS3 sessi
 | 항목 | 값 |
 |------|----|
 | Cohort | WUSTL Knight ADRC retrospective 통합 (single ADRC, NACCADC = 0001 등가) |
-| Subject ID | `OAS3xxxx` (1-padded 4 digits, 1378 subjects) |
+| Subject ID | `OAS3xxxx` (1-padded 4 digits, 1379 subjects — 2025-12 Tau 통합 후 +1; 원본 release 1,378) |
 | UDS 버전 | v2 ↔ v3 mix (FORMVER 컬럼 없음 — visit별 검사 셋으로 추정) |
 | Optional 모듈 | A3 (4,090행), B3 (4,090행) |
 | 폼-form join 키 | `(OASISID, days_to_visit)` |

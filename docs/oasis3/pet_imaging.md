@@ -2,6 +2,10 @@
 
 OASIS3에는 PET 데이터가 **3개 메타데이터 CSV** + **NIfTI raw scan** 형태로 존재한다. 이 문서는 세 CSV의 역할 비교, 트레이서별 컬럼 채워짐 패턴, Centiloid 변환 방법론, PUP 파이프라인 원리를 정리한다.
 
+> **Tau (AV1451) sub-project 가족**: AV1451 데이터는 `OASIS-3_AV1451` (cross-sectional, n=451) + `OASIS-3_AV1451_Longitudinal` (n=85, 전자의 다회 timepoint subset)으로 구성. **2025-12 부로 OASIS-3 본 프로젝트에 통합**되어 별도 access 신청 불필요. 자세한 access 절차/다운로드 도구는 [`protocol.md`](protocol.md) §7.
+
+> **출판 시 주의 (Avid 사전 검토)**: AV45 또는 AV1451 데이터를 사용한 모든 출판/발표 (peer-reviewed paper, preprint, poster, oral presentation 포함)는 **출판 30일 전 Avid Radiopharmaceuticals (Eli Lilly 자회사) 사전 검토 필수**. 위반 시 OASIS access 박탈. cross-sectional/longitudinal 둘 다 동일 적용. 상세는 [`protocol.md`](protocol.md) §7.4.
+
 ---
 
 ## 1. 파일 요약
